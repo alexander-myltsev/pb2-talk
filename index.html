@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="en">
 
 	<head>
@@ -47,7 +47,13 @@
 					<!-- <h3>A macro-based PEG parser generator for Scala 2.10+</h3> -->
 					<h4>генерируемые макросами генераторы PEG-парсеров</h4>
 					<p>
-						<small><a href="https://github.com/alexander-myltsev">Александр Мыльцев</a> / <a href="http://twitter.com/alex_myltsev">@alex_myltsev</a></small>
+						<small>
+                            Александр Мыльцев /
+                            <a href="https://github.com/alexander-myltsev">github</a> /
+						    <a href="http://www.linkedin.com/in/alexandermyltsev">linkedin.com/in/alexandermyltsev</a>
+                            <br/>
+                            <a href="http://www.slideshare.net/AlexanderMyltsev/parboiled2-myltsev">презентация</a>
+                        </small>
 					</p>
 				</section>
 
@@ -63,11 +69,11 @@
 					<br/><br/>
 
 					<pre style="width: 60%"><code data-trim class="scala">
-1 + 2 * 3 — арифметическое выражение: да или нет?
+1 + 2 * 3 — арифметическое выражение: да или нет? — да
 					</code></pre>
 
 					<pre style="width: 60%"><code data-trim class="scala">
-1 + 2 * 3 ~> Plus(1, Mul(2, 3))
+1 + 2 * 3 — структура? — Plus(1, Mul(2, 3))
 					</code></pre>
 				</section>
 
@@ -80,12 +86,6 @@
 						<li>json</li>
 						<li>...</li>
 					</ol>
-
-					<!-- <pre style="width: 50%"><code data-trim>
-a*b = { b, ab, aab, aaab, ... }
-					</code></pre>
-
-					<img style="margin: 0 30px 30px 0; width: 10%" src="assets/ab_nda.svg"> -->
 				</section>
 
 				<section>
@@ -283,9 +283,27 @@ out:
 				</section>
 
 				<section>
+					<h2>рекурсивный нисходящий парсер</h2>
+					<h3>плюсы</h3>
+					<ol>
+						<li>код на одном языке</li>
+						<li>одна среда разработки</li>
+						<li>высокая производительность</li>
+					</ol>
+
+					<br/><br/>
+
+					<h3>минусы</h3>
+					<ol>
+						<li>нет предметно-ориентиррованного языка</li>
+						<li>низкоуровневое кодирование</li>
+					</ol>
+				</section>
+
+				<section>
 					<h2>ANTLR3</h2>
 
-					язык и среда разработки
+					внутренний язык и среда разработки
 					<pre style="width: 40%"><code data-trim>
 grammar SimpleCalc;
  
@@ -309,6 +327,23 @@ PLUS    : '+';
 				</section>
 
 				<section>
+					<h2>ANTLR3</h2>
+					<h3>плюсы</h3>
+					<ol>
+						<li>предметно-ориентированный язык</li>
+						<li>высокая производительность</li>
+					</ol>
+
+					<br/><br/>
+
+					<h3>минусы</h3>
+					<ol>
+						<li>новый язык, другая среда</li>
+						<li>генерация и подключение файлов</li>
+					</ol>
+				</section>
+
+				<section>
 					<h2>комбинаторы парсеров</h2>
 					<ul>
 						<li>Haskell Parsec</li>
@@ -324,13 +359,19 @@ PLUS    : '+';
 						<li>программа на исходном языке</li>
 						<li>файлы в исходном проекте</li>
 						<li>исходная среда разработки</li>
+						<li>типизация парсеров</li>
 						<li>близкая к БНФ форма записи</li>
 					</ol>
 
-					<pre style="width: 80%"><code data-trim class="scala">
-def expr    = term ~ rep("+" ~ term | "-" ~ term)
-def term    = factor ~ rep("*" ~ factor | "/" ~ factor)
-def factor  = floatingPointNumber | "(" ~ expr ~ ")"
+					<pre style="width: 100%"><code data-trim class="scala">
+//  Expr  ::= Term      { '+'   Term  | '-'   Term }
+def expr    = term ~ rep( "+" ~ term  | "-" ~ term )
+
+//  Term  ::=  Factor       { '*'   Factor | '/'   Factor }
+def term    =  factor ~ rep ( "*" ~ factor | "/" ~ factor )
+
+//  Factor  ::= Number | '('   Expr   ')'
+def factor    = number | "(" ~ expr ~ ")"
 					</code></pre>
 
 					<br/>
@@ -338,7 +379,16 @@ def factor  = floatingPointNumber | "(" ~ expr ~ ")"
 					<ol style="width: 60%">
 						<li>интерпретатор</li>
 						<li>временные объекты</li>
-						<li>низкая скорость</li>
+						<li>низкая производительность</li>
+					</ol>
+				</section>
+
+				<section>
+					<h2>генератор парсеров</h2>
+					<ol>
+						<li>на одном языке в одной среде разработки</li>
+						<li>типизированный DSL</li>
+						<li>компиляция, а не интерпритация</li>
 					</ol>
 				</section>
 
@@ -346,141 +396,314 @@ def factor  = floatingPointNumber | "(" ~ expr ~ ")"
 					<h2>parboiled2</h2>
 					<ul>
 						<li>PEG — грамматика, разбирающая выражение</li>
-						<li>DSL — предметно-ориентированный язык</li>
-						<li>типизация</li>
+						<li>типизированный DSL</li>
 						<li>компиляция правил</li>
 					</ul>
 				</section>
 
 				<section>
-					<h2>parboiled2: DSL</h2>
+					<h2>rule, ch, str</h2>
 					<ul>
-						<li>rule { }</li>
-						<li>ch, str</li>
-						<li>a ~ b, a | b</li>
-						<li>...</li>
+						<li>реализация класса `Parser`</li>
+						<li>правила грамматики внутри метода rule { }</li>
 					</ul>
-				</section>
-
-				<section>
-					<h2>ABC-парсер</h2>
-					<pre><code data-trim>
-{ a^n b^n c^n: n >= 1 } = { abc, aabbcc, aaabbbccc, ... }
-					</code></pre>
 
 					<pre><code data-trim>
-S ← &(A 'c') 'a'+ B !('a'/'b'/'c')
-A ← 'a' A? 'b'
-B ← 'b' B? 'c'
-					</code></pre>
-
-					<pre><code data-trim class="scala">
-class ABCParser(val input: ParserInput) extends Parser {
-  def S         = rule { &(A ~ 'c') ~ oneOrMore('a') ~ B ~ !(ch('a') | 'b' | 'c') ~ EOI }
-  def A: Rule0  = rule { 'a' ~ optional(A) ~ 'b' }
-  def B: Rule0  = rule { 'b' ~ optional(B) ~ 'c' }
+class SampleParser(val input: ParserInput) extends Parser {
+  def Abc = rule { "abc" }
+  def Ch  = rule { '7' }
+  def Num = rule { 42 } // ошибка компиляции
 }
 					</code></pre>
 				</section>
 
 				<section>
-					<h2>калькулятор</h2>
-					<h2>JSON-парсер</h2>
+					<h2>a ~ b, a | b</h2>
+					<pre><code data-trim class="scala">
+class SampleParser(val input: ParserInput) extends Parser {
+  def r1 = rule { "a" ~ "b" } // "ab"
+  def r2 = rule { "a" | "b" } // { "a", "b" }
+  def r3 = rule { "a" ~ ("b" | "c") } // { "ab", "ac" }
+  def r4 = rule { "ab" | "a" }
+}
+					</code></pre>
+				</section>
+
+				<section>
+					<h2>zeroOrMore, oneOrMore</h2>
+					<pre><code data-trim class="scala">
+class SampleParser(val input: ParserInput) extends Parser {
+  def r1 = rule { zeroOrMore("a") } // { "", "a", "aa", "aaa", ... }
+  def r2 = rule { oneOrMore("a") }  // { "a", "aa", "aaa", ... }
+}
+					</code></pre>
+				</section>
+
+				<section>
+					<h2>парсер арифметических выражений</h2>
+
+					<pre><code data-trim class="scala">
+class CalculatorParser(val input: ParserInput) extends Parser {
+  def InputLine = rule { Expression ~ EOI }
+
+  // Рекурсивный вызов в Parens, поэтому нужен тип
+  def Expression: Rule0 = rule { Term ~ zeroOrMore('+' ~ Term | '-' ~ Term) }
+
+  def Term   = rule { Factor ~ zeroOrMore('*' ~ Factor | '/' ~ Factor) }
+
+  def Factor = rule { Number | Parens }
+
+  def Parens = rule { '(' ~ Expression ~ ')' }
+
+  def Number = rule { oneOrMore(CharPredicate.Digit) }
+}
+					</code></pre>
+				</section>
+
+				<section>
+					<h2>арифметическое выражение:<br/> да или нет?</h2>
+					<pre><code data-trim class="scala">
+val line = readline()
+val calc = new CalculatorParser(line)
+
+calc.InputLine().run() match {
+  case Success(_) => "Yes" 
+  case Failure(_) => "No"
+}
+					</code></pre>
+				</section>
+
+				<section>
+					<h2>parser actions, value-stack</h2>
+
+					<p>value-stack — отличие от haskell parsec et al.</p>
+
+					<pre><code data-trim class="scala">
+class ValueStack(initialSize: Int, maxSize: Int) extends Iterable[Any] {
+  var buffer = new Array[Any](initialSize)
+  var size   = 0
+}
+					</code></pre>
+
+					<pre><code data-trim class="scala">
+def Digits    = rule { oneOrMore("0" | "1" | /*...*/ "9") } // oneOrMore("0"-"9")
+
+def False     = rule { "false" ~ push(false) } // "false" >>> VStk: [false]
+
+def NumberStr = rule { capture(Digits) } // "42" >>> VStk: ["42"]
+
+def Number    = rule { capture(Digits) ~> (_.toInt) } "42" >>> // VStk: [42]
+
+def Sum       = rule { Number ~ " " ~ Number ~> ((_:Int) + _) } // "11 15" >>> VStk: [26]
+					</code></pre>
+				</section>
+
+				<section>
+				<h2>калькулятор</h2>
+					<pre><code data-trim class="scala">
+class CalculatorParser(val input: ParserInput) extends Parser {
+  def Expression: Rule1[Int] = rule {
+    Term ~ zeroOrMore(
+      '+' ~ Term ~> ((_: Int) + _)
+    | '-' ~ Term ~> ((_: Int) - _))
+  }
+
+  def Term = rule {
+    Factor ~ zeroOrMore(
+      '*' ~ Factor ~> ((_: Int) * _)
+    | '/' ~ Factor ~> ((_: Int) / _))
+  }
+}
+					</code></pre>
+
+					<p>`~>` может передавать элемент AST в стек</p>
+					<p>`~>`-обработчик сам может быть парсером</p>
+				</section>
+
+				<section>
+					<h2>типизация правил и value-stack</h2>
+					<pre style="width: 80%"><code data-trim class="scala">
+def InputRule: Rule[HNil, String :: HNil] = rule { capture("a") }
+
+class Rule[-I <: HList, +O <: HList]
+I - тип значения со стека
+O - тип значения в стек
+					</code></pre>
+
+					<pre style="width: 80%"><code data-trim class="scala">
+type RuleN[L <: HList] = Rule[HNil, L]
+type Rule0 = RuleN[HNil]
+type Rule1[T] = RuleN[T :: HNil]
+type Rule2[A, B] = RuleN[A :: B :: HNil]
+					</code></pre>
+				</section>
+
+				<section>
+					<h2>типизация правил и value-stack</h2>
+					<pre style="width: 105%"><code data-trim class="scala">
+def a:  Rule1[String] = rule { capture("a") }
+
+def b:  Rule1[String] = rule { capture("7") }
+
+def bi: Rule1[Int]    = rule { b ~> ((_:String).toInt) } 
+					</code></pre>
+				</section>
+
+				<section>
+					<h2>типизация правил и value-stack</h2>
+					<pre style="width: 105%"><code data-trim class="scala">
+def c1: Rule2[String, Int] = rule { a ~ bi }
+
+def c2: Rule2[Int, Int] = rule { bi ~ push(42) }
+
+def c3: Rule[Int :: HNil, Int :: HNil] = rule { capture("7") ~> ((x: Int, y: String) => x + y.toInt) }
+					</code></pre>
 				</section>
 
 				<section>
 					<h2>компиляция</h2>
 					<pre><code data-trim class="scala">
 abstract class Parser {
-  def rule(r: Rule): Rule = macro ruleImpl
+  def rule(r: Rule): Rule = macro Parser.ruleImpl
 }
 
-def ruleImpl(ctx: ParserContext)(r: ctx.Expr[Rule]): ctx.Expr[Rule] = r.tree match {
-  case q"$a.this.str($s)" =>
-  case q"$a.this.ch($ch)" =>
-  case q"$lhs.|($rhs)"    =>
-  case q"$lhs.~($rhs)"    =>
+object Parser {	
+  def ruleImpl(ctx: ParserContext)(r: ctx.Expr[Rule]): ctx.Expr[Rule] = 
+    reify {
+      OpTree(r.tree).render().splice
+    }
+} 
+  					</code></pre>
+  				</section>
+
+  				<section>
+					<h2>компиляция</h2>
+					<pre><code data-trim class="scala">
+object OpTree {
+  def apply(tree: Tree): OpTree =
+    r.tree match { // квазицитирования
+      case q"$a.this.str($s)" => LiteralString(s)
+      case q"$a.this.ch($ch)" => LiteralChar(ch)
+      case q"$lhs.|($rhs)"    => FirstOf(OpTree(lhs), OpTree(rhs))
+      case q"$lhs.~($rhs)"    => Sequence(OpTree(lhs), OpTree(rhs))
+    }
 }
+
+abstract class OpTree {
+  def render(): Expr[Rule]
+}
+
+case class Rule(val matched: Boolean)
 					</code></pre>
 				</section>
 
 				<section>
+					<h2>LiteralChar</h2>
+					<pre><code data-trim class="scala">
+implicit def ch(c: Char): Rule0
+rule { ch('a') }
+case q"$a.this.ch($ch)" => // $a = CalculatorParser, $ch = CharLiteral('a')
+					</code></pre>
+
+					<pre><code data-trim class="scala">
+case class LiteralChar(charTree: Tree) extends OpTree {
+  def render(): Expr[Rule] = reify {
+    val char = c.Expr[Char](charTree).splice
+    val p = c.prefix.splice // Current parser
+    Rule(p.__nextChar() == char)
+  }
+}
+					</code></pre>
+				</section>
+
+<!-- 				<section>
 					<h2>char</h2>
 					<pre><code data-trim class="scala">
-case q"$a.this.ch($ch)" => reify {
+reify {
   if ($ch == p.cursorChar()) {
     p.advance()
     Rule.MATCH
   } else Rule.MISMATCH
-}
+} 
 					</code></pre>
-				</section>
+				</section> -->
 
 				<section>
-					<h2>string</h2>
+					<h2>LiteralString</h2>
+
 					<pre><code data-trim class="scala">
-case q"$a.this.str($s)" => reify {
-  var ix = 0
-  while (ix < $s.length && $s.charAt(ix) == p.cursorChar()) {
-    ix += 1
-    p.advance()
-  }
-  Rule(ix == $s.length)
-}
+implicit def str(c: String): Rule0
+rule { str("abc") }
+case q"$a.this.str($s)" => // $a = CalculatorParser, $s = StringLiteral("abc")
 					</code></pre>
-				</section>
 
-				<section>
-					<h2>a | b</h2>
 					<pre><code data-trim class="scala">
-case q"$lhs.|($rhs)" => reify {
-  val mark = p._cursor
-  if (${render(lhs)}.matched) {
-    Rule.MATCH
-  } else {
-    p._cursor = mark
-    ${render(rhs)}
-  }
-}
+case class LiteralString(s: Tree) extends OpTree {
+  def render(): Expr[Rule] = c.Expr[Rule](q`
+    val p = ${c.prefix} // Current parser
+    var ix = 0
+    while (ix < $s.length && $s.charAt(ix) == p.__nextChar()) {
+      ix += 1
+    }
+    Rule(ix == $s.length)
+`)
 					</code></pre>
 				</section>
 
 				<section>
-					<h2>a ~ b</h2>
+					<h2>FirstOf: a | b</h2>
 					<pre><code data-trim class="scala">
-case q"$lhs.~($rhs)" => reify {
-  Rule(${render(lhs)}.matched && ${render(rhs)}.matched)
+// case q"$lhs.|($rhs)" => 
+
+case class FirstOf(charTree: Tree) extends OpTree {
+  def render(): Expr[Rule] = c.Expr[Rule](q` 
+    val mark = p.__cursor
+    if (${OpTree(lhs).render()}.matched) {
+      Rule(true)
+    } else {
+      p.__cursor = mark
+      ${OpTree(rhs).render()}
+    }
+  `)
 }
 					</code></pre>
 				</section>
 
 				<section>
-					<h2>типизация правил и value-stack</h2>
-					<pre style="width: 50%"><code data-trim class="scala">
-class Rule[-I <: HList, +O <: HList]
-I - тип значения со стека
-O - тип значения в стек
-					</code></pre>
+					<h2>Sequence: a ~ b</h2>
+					<pre><code data-trim class="scala">
+// case q"$lhs.~($rhs)" => 
 
-					<pre style="width: 100%"><code data-trim class="scala">
-def a:   Rule[     _, String] = rule { capture("a") }
-def b:   Rule[     _, String] = rule { capture("7") }
-def bi:  Rule[String, Int   ] = rule { b ~> ((_:String).toInt) }
-def bd:  Rule[     _, Int   ] = rule { b ~> ((_:String).toDouble) } // compile error
-					</code></pre>
-
-					<pre style="width: 100%"><code data-trim class="scala">
-def c1: Rule[     _, String::Int]         = rule { a ~ bi }
-def c2: Rule[     _, String::String::Int] = rule { a ~ a ~> push(42) }
-
-def c3: Rule[Int, Int] = rule { capture("7") ~> ((x: Int, y: String) => x + y.toInt) }
+case class FirstOf(charTree: Tree) extends OpTree {
+  def render(): Expr[Rule] = c.Expr[Rule](q`
+    Rule(${OpTree(lhs).render()}.matched && ${OpTree(rhs).render()}.matched)
+  `)
+}
 					</code></pre>
 				</section>
 
+				<section>
+					<h2>parboiled2.org</h2>
+					<ul>
+						<li>oneOrMore</li>
+						<li>zeroOrMore</li>
+						<li>~></li>
+						<li>...</li>
+					</ul>
+				</section>
 
 				<section>
-					<h1>конец</h1>
-					<h3>вопросы?</h3>
+					<h2>использование</h2>
+					<ul>
+						<li>json-парсер в ~100 быстрее Scala Parsers, в ~10 parboiled1</li>
+						<li>typesafe, spray.io, spray-json</li>
+					</ul>
+				</section>
+
+				<section>
+					<h3><a href="http://parboiled2.org">parboiled2.org</a></h3>
+					<h4><a href="http://www.linkedin.com/in/alexandermyltsev">linkedin.com/in/alexandermyltsev</a></h4>
+					<h4>вопросы</h4>
 				</section>
 
 			</div>
