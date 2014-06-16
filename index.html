@@ -15,7 +15,8 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
 		<link rel="stylesheet" href="css/reveal.min.css">
-		<link rel="stylesheet" href="css/theme/night.css" id="theme">
+		<!-- <link rel="stylesheet" href="http://spray.io/wjax/css/theme/sirthias.css" id="theme"> -->
+		<link rel="stylesheet" href="css/theme/my.css" id="theme">
 
 		<!-- For syntax highlighting -->
 		<link rel="stylesheet" href="lib/css/zenburn.css">
@@ -38,536 +39,533 @@
 
 	<body>
 
+        <style>
+            .reveal pre {
+                box-shadow: none; }
+
+            .reveal pre code {
+                background: none;
+                font-size: 1.2em;
+                line-height: 1.1em;
+                max-height: 420px; }
+        </style>
+
 		<div class="reveal">
 
 			<!-- Any section element inside of this container is displayed as a slide -->
 			<div class="slides">
 				<section>
 					<h1>parboiled2</h1>
-					<!-- <h3>A macro-based PEG parser generator for Scala 2.10+</h3> -->
-					<h4>генерируемые макросами генераторы PEG-парсеров</h4>
+					<h4>a macro-based PEG-parsers generator for Scala 2.10+</h4>
 					<p>
 						<small>
-                            Александр Мыльцев /
-                            <a href="https://github.com/alexander-myltsev">github</a> /
-						    <a href="http://www.linkedin.com/in/alexandermyltsev">linkedin.com/in/alexandermyltsev</a>
-                            <br/>
-                            <a href="http://www.slideshare.net/AlexanderMyltsev/parboiled2-myltsev">презентация</a>
+                            Alexander-Myltsev <br/>
+                            <a href="https://github.com/alexander-myltsev">alexander-myltsev@github</a> <br/>
+						    <a href="http://www.linkedin.com/in/alexandermyltsev">linkedin.com/in/alexandermyltsev</a> <br/>
+                            <a href="http://twitter.com/alex_myltsev">alex_myltsev@twitter</a>
                         </small>
 					</p>
 				</section>
 
+                <section>
+                    <h2>credentials</h2>
+                    <img style="width:100%" src="lib/contribute.png" alt="application">
+                    <ul>
+                        <li>a core contributor (Google SoC'13 mostly)</li>
+                        <li>a core contributor to scala-js porting</li>
+                    </ul>
+                </section>
 
 				<section>
-					<h2>задача парсинга</h2>
+					<h2>parsing task</h2>
 					<ul>
-						<li>вход: строка, поток байт, ...</li>
-						<li>выход: обладает структурой (да/нет), структура</li>
-						<li>пример</li>
+						<li>input: stream of characters or bytes</li>
+						<li>output: is it structured? what is the structure?</li>
 					</ul>
 
 					<br/><br/>
 
-					<pre style="width: 60%"><code data-trim class="scala">
-1 + 2 * 3 — арифметическое выражение: да или нет? — да
-					</code></pre>
-
-					<pre style="width: 60%"><code data-trim class="scala">
-1 + 2 * 3 — структура? — Plus(1, Mul(2, 3))
-					</code></pre>
-				</section>
-
-				<section>
-					<h2>регулярные выражения</h2>
-					
-					<p>нельзя: рекурсивные структуры</p>
-					<ol>
-						<li>калькулятор</li>
-						<li>json</li>
-						<li>...</li>
-					</ol>
-				</section>
-
-				<section>
-					<h2>рекурсивный нисходящий парсер: C/C++</h2>
-
-					<pre><code data-trim class="cpp">
-static int lex_scan_number(lex_t *lex, int c, json_error_t *error)
-{
-    const char *saved_text;
-    char *end;
-    double doubleval;
-
-    lex->token = TOKEN_INVALID;
-
-    if(c == '-')
-        c = lex_get_save(lex, error);
-
-    if(c == '0') {
-        c = lex_get_save(lex, error);
-        if(l_isdigit(c)) {
-            lex_unget_unsave(lex, c);
-            goto out;
-        }
-    }
-    else if(l_isdigit(c)) {
-        c = lex_get_save(lex, error);
-        while(l_isdigit(c))
-            c = lex_get_save(lex, error);
-    }
-    else {
-        lex_unget_unsave(lex, c);
-        goto out;
-    }
-
-    if(c != '.' && c != 'E' && c != 'e') {
-        json_int_t intval;
-
-        lex_unget_unsave(lex, c);
-
-        saved_text = strbuffer_value(&lex->saved_text);
-
-        errno = 0;
-        intval = json_strtoint(saved_text, &end, 10);
-        if(errno == ERANGE) {
-            if(intval < 0)
-                error_set(error, lex, "too big negative integer");
-            else
-                error_set(error, lex, "too big integer");
-            goto out;
-        }
-
-        assert(end == saved_text + lex->saved_text.length);
-
-        lex->token = TOKEN_INTEGER;
-        lex->value.integer = intval;
-        return 0;
-    }
-
-    if(c == '.') {
-        c = lex_get(lex, error);
-        if(!l_isdigit(c)) {
-            lex_unget(lex, c);
-            goto out;
-        }
-        lex_save(lex, c);
-
-        c = lex_get_save(lex, error);
-        while(l_isdigit(c))
-            c = lex_get_save(lex, error);
-    }
-
-    if(c == 'E' || c == 'e') {
-        c = lex_get_save(lex, error);
-        if(c == '+' || c == '-')
-            c = lex_get_save(lex, error);
-
-        if(!l_isdigit(c)) {
-            lex_unget_unsave(lex, c);
-            goto out;
-        }
-
-        c = lex_get_save(lex, error);
-        while(l_isdigit(c))
-            c = lex_get_save(lex, error);
-    }
-
-    lex_unget_unsave(lex, c);
-
-    if(jsonp_strtod(&lex->saved_text, &doubleval)) {
-        error_set(error, lex, "real number overflow");
-        goto out;
-    }
-
-    lex->token = TOKEN_REAL;
-    lex->value.real = doubleval;
-    return 0;
-
-out:
-    return -1;
-}
-					</code></pre>
-
-					<a href="https://github.com/akheron/jansson/blob/master/src/load.c">https://github.com/akheron/jansson/blob/master/src/load.c</a>
-				</section>
-
-				<section>
-					<h2>рекурсивный нисходящий парсер: JavaScript</h2>
-
-					<pre><code data-trim>
-        number = function () {
-
-// Parse a number value.
-
-            var number,
-                string = '';
-
-            if (ch === '-') {
-                string = '-';
-                next('-');
-            }
-            while (ch >= '0' && ch <= '9') {
-                string += ch;
-                next();
-            }
-            if (ch === '.') {
-                string += '.';
-                while (next() && ch >= '0' && ch <= '9') {
-                    string += ch;
-                }
-            }
-            if (ch === 'e' || ch === 'E') {
-                string += ch;
-                next();
-                if (ch === '-' || ch === '+') {
-                    string += ch;
-                    next();
-                }
-                while (ch >= '0' && ch <= '9') {
-                    string += ch;
-                    next();
-                }
-            }
-            number = +string;
-            if (!isFinite(number)) {
-                error("Bad number");
-            } else {
-                return number;
-            }
-        },
-
-        string = function () {
-
-// Parse a string value.
-
-            var hex,
-                i,
-                string = '',
-                uffff;
-
-// When parsing for string values, we must look for " and \ characters.
-
-            if (ch === '"') {
-                while (next()) {
-                    if (ch === '"') {
-                        next();
-                        return string;
-                    }
-                    if (ch === '\\') {
-                        next();
-                        if (ch === 'u') {
-                            uffff = 0;
-                            for (i = 0; i < 4; i += 1) {
-                                hex = parseInt(next(), 16);
-                                if (!isFinite(hex)) {
-                                    break;
-                                }
-                                uffff = uffff * 16 + hex;
-                            }
-                            string += String.fromCharCode(uffff);
-                        } else if (typeof escapee[ch] === 'string') {
-                            string += escapee[ch];
-                        } else {
-                            break;
-                        }
-                    } else {
-                        string += ch;
-                    }
-                }
-            }
-            error("Bad string");
-        },
-					</code></pre>
-
-					<a href="https://github.com/douglascrockford/JSON-js/blob/master/json_parse.js">https://github.com/douglascrockford/JSON-js/blob/master/json_parse.js</a>
-				</section>
-
-				<section>
-					<h2>рекурсивный нисходящий парсер</h2>
-					<h3>плюсы</h3>
-					<ol>
-						<li>код на одном языке</li>
-						<li>одна среда разработки</li>
-						<li>высокая производительность</li>
-					</ol>
-
-					<br/><br/>
-
-					<h3>минусы</h3>
-					<ol>
-						<li>нет предметно-ориентиррованного языка</li>
-						<li>низкоуровневое кодирование</li>
-					</ol>
-				</section>
-
-				<section>
-					<h2>ANTLR3</h2>
-
-					внутренний язык и среда разработки
-					<pre style="width: 40%"><code data-trim>
-grammar SimpleCalc;
- 
-add : NUMBER PLUS NUMBER;
- 
-NUMBER  : ('0'..'9')+ ;
- 
-PLUS    : '+';
-					</code></pre>
-
-					<br/>
-
-					генерация java-файлов
-					<pre style="width: 40%"><code data-trim>
-					java org.antlr.Tool SimpleCalc.g
-					</code></pre>
-
-					<br/>
-
-					подключение файлов к проекту
-				</section>
-
-				<section>
-					<h2>ANTLR3</h2>
-					<h3>плюсы</h3>
-					<ol>
-						<li>предметно-ориентированный язык</li>
-						<li>высокая производительность</li>
-					</ol>
-
-					<br/><br/>
-
-					<h3>минусы</h3>
-					<ol>
-						<li>новый язык, другая среда</li>
-						<li>генерация и подключение файлов</li>
-					</ol>
-				</section>
-
-				<section>
-					<h2>комбинаторы парсеров</h2>
-					<ul>
-						<li>Haskell Parsec</li>
-						<li>Scala Combinator Parsers</li>
-						<li>FParsec</li>
-					</ul>
-				</section>
-
-				<section>
-					<h2>комбинаторы парсеров</h2>
-					<h3>плюсы</h3>
-					<ol style="width: 60%">
-						<li>программа на исходном языке</li>
-						<li>файлы в исходном проекте</li>
-						<li>исходная среда разработки</li>
-						<li>типизация парсеров</li>
-						<li>близкая к БНФ форма записи</li>
-					</ol>
-
-					<pre style="width: 100%"><code data-trim class="scala">
-//  Expr  ::= Term      { '+'   Term  | '-'   Term }
-def expr    = term ~ rep( "+" ~ term  | "-" ~ term )
-
-//  Term  ::=  Factor       { '*'   Factor | '/'   Factor }
-def term    =  factor ~ rep ( "*" ~ factor | "/" ~ factor )
-
-//  Factor  ::= Number | '('   Expr   ')'
-def factor    = number | "(" ~ expr ~ ")"
-					</code></pre>
-
-					<br/>
-					<h3>минусы</h3>
-					<ol style="width: 60%">
-						<li>интерпретатор</li>
-						<li>временные объекты</li>
-						<li>низкая производительность</li>
-					</ol>
-				</section>
-
-				<section>
-					<h2>генератор парсеров</h2>
-					<ol>
-						<li>на одном языке в одной среде разработки</li>
-						<li>типизированный DSL</li>
-						<li>компиляция, а не интерпритация</li>
-					</ol>
-				</section>
-
-				<section>
-					<h2>parboiled2</h2>
-					<ul>
-						<li>PEG — грамматика, разбирающая выражение</li>
-						<li>типизированный DSL</li>
-						<li>компиляция правил</li>
-					</ul>
-				</section>
-
-				<section>
-					<h2>rule, ch, str</h2>
-					<ul>
-						<li>реализация класса `Parser`</li>
-						<li>правила грамматики внутри метода rule { }</li>
-					</ul>
-
-					<pre><code data-trim>
-class SampleParser(val input: ParserInput) extends Parser {
-  def Abc = rule { "abc" }
-  def Ch  = rule { '7' }
-  def Num = rule { 42 } // ошибка компиляции
-}
-					</code></pre>
-				</section>
-
-				<section>
-					<h2>a ~ b, a | b</h2>
-					<pre><code data-trim class="scala">
-class SampleParser(val input: ParserInput) extends Parser {
-  def r1 = rule { "a" ~ "b" } // "ab"
-  def r2 = rule { "a" | "b" } // { "a", "b" }
-  def r3 = rule { "a" ~ ("b" | "c") } // { "ab", "ac" }
-  def r4 = rule { "ab" | "a" }
-}
-					</code></pre>
-				</section>
-
-				<section>
-					<h2>zeroOrMore, oneOrMore</h2>
-					<pre><code data-trim class="scala">
-class SampleParser(val input: ParserInput) extends Parser {
-  def r1 = rule { zeroOrMore("a") } // { "", "a", "aa", "aaa", ... }
-  def r2 = rule { oneOrMore("a") }  // { "a", "aa", "aaa", ... }
-}
-					</code></pre>
-				</section>
-
-				<section>
-					<h2>парсер арифметических выражений</h2>
+                    example:
 
 					<pre><code data-trim class="scala">
-class CalculatorParser(val input: ParserInput) extends Parser {
+1 + 2 * 3
+
+1) is it arithmetical expression? — yes!
+
+                                 +
+                                / \
+2) what is the structure? —    1   *
+                                  / \
+                                 2   3
+                    </code></pre>
+
+				</section>
+
+                <section>
+                    <h2>requirements</h2>
+                    <ol>
+                        <li>work inside of Scala ecosystem
+                            <ul>
+                                <li>Java — not necessary</li>
+                                <li>IDE support</li>
+                            </ul>
+                        </li>
+                        <li>work fast</li>
+                        <li>easy to maintain — typed embedded DSL</li>
+                        <li>have few dependencies</li>
+                    </ol>
+                </section>
+
+                <section>
+                    <h2>RegEx</h2>
+
+                    <p>can't parse recursive data like</p>
+                    <ol>
+                        <li>arithmetical expression</li>
+                        <li>json</li>
+                        <li>...</li>
+                    </ol>
+                </section>
+
+                <section>
+                    <h2>alternatives (some of...)</h2>
+                    <ul>
+                        <li>barehanded parser
+                            <ul>
+                                <li><a href="https://github.com/akheron/jansson/blob/master/src/load.c">github.com/akheron/jansson/blob/master/src/load.c</a></li>
+                                <li><a href="https://github.com/douglascrockford/JSON-js/blob/master/json_parse.js">github.com/douglascrockford/JSON-js/blob/master/json_parse.js</a></li>
+                            </ul>
+                        </li>
+                        <li>Antlr — ANother Tool for Language Recognition</li>
+                        <li>parser combinators (Haskell Parsec, Scala parser combinators, etc.)</li>
+                    </ul>
+
+                    <br/><br/>
+
+                    <h4>either different IDE, or slower, or harder to maintain</h4>
+                </section>
+
+                <section>
+                    <h2>parboiled 1.x</h2>
+                    <ul>
+                        <li>~10 times slower</li>
+                        <li>not very powerful DSL</li>
+                        <li>more dependencies</li>
+                    </ul>
+                </section>
+
+				<section>
+					<h1>parboiled2</h1>
+				</section>
+
+
+                <section>
+                    <h2>core features</h2>
+                    <ul>
+                        <li>based on PEG — Parsing Expression Grammar</li>
+                        <li>flexible and type-safe DSL</li>
+                        <li>compiled rules and performance</li>
+                        <li>one parsing phase, no lexer required</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h2>install it</h2>
+                    <ul>
+                        <li>just a Scala lib</li>
+                        <li>2.10.4 and 2.11.1</li>
+                    </ul>
+
+                    <pre style="width: 85%"><code data-trim class="scala">
+libraryDependencies += "org.parboiled" %% "parboiled" % "2.0.0"
+                    </code></pre>
+                </section>
+
+                <section>
+                    <h2>toy parser</h2>
+<pre><code data-trim class="scala">
+abstract class Parser {
+  def input: ParserInput
+}
+
+class ToyParser(val input: ParserInput) extends Parser {
+  def InputLine = rule { "a" ~ ("b" | "c") }
+}
+</code></pre>
+                </section>
+
+                <section>
+                    <h2>toy parser</h2>
+<pre><code data-trim class="scala">
+def InputLine = rule { "a" ~ ("b" | "c") }
+</code></pre>
+
+<pre class="fragment"><code data-trim class="scala">
+> new ToyParser("ab").InputLine.run()
+Try[Unit] = Success(())
+</code></pre>
+
+<pre class="fragment"><code data-trim class="scala">
+> new ToyParser("ac").InputLine.run()
+Try[Unit] = Success(())
+</code></pre>
+
+<pre class="fragment"><code data-trim class="scala">
+> new ToyParser("d").InputLine.run()
+Try[Unit] = Failure(org.parboiled2.ParseError)
+</code></pre>
+                </section>
+
+                <section>
+                    <h2>toy parser: step by step</h2>
+                    <pre><code data-trim class="scala">
+def InputLine = rule { "a" ~ ("b" | "c") }
+
+input: "ac"
+                    </code></pre>
+
+                    <ol>
+                        <li class="fragment">InputLine starts — calls "~" subrule — cursor is at 0 pos</li>
+                        <li class="fragment">"~" matches left subrule "a", and if succeeds then right subrule "|"</li>
+                        <li class="fragment">rule "a" is matched against input(0) — cursor is at 1</li>
+                        <li class="fragment">"|" matches left subrule "b", and if fails then matches subrule "c"</li>
+                        <li class="fragment">"b" is failed to match — cursor stays at 1</li>
+                        <li class="fragment">"c" is succeeded to match — cursor stays at 2</li>
+                        <li class="fragment">match is successful</li>
+                    </ol>
+                </section>
+
+                <section>
+                    <h2>value stack & typed rules</h2>
+                </section>
+
+                <section>
+                    <h2>value stack</h2>
+                    <ol>
+                        <li>rules <u>do not</u> return any value</li>
+                        <li>push and pop result from <em>ValueStack</em>
+                            <ul>
+                                <li>implicit temporary storage</li>
+                                <li>e.g. used for constructing AST, "in-phase" computations</li>
+                            </ul>
+                        </li>
+                        <li>rule is typed according to its interaction with <em>ValueStack</em></li>
+                    </ol>
+                </section>
+
+                <section>
+                    <h2>rule types</h2>
+                    <pre><code data-trim class="scala">
+class Rule[-I <: HList, +O <: HList]
+                    </code></pre>
+
+                    <ul>
+                        <li><b>I &nbsp; <&colon; HList</b> &nbsp; encodes number and types the rule <u>pops off</u></li>
+                        <li><b>O <&colon; HList</b> &nbsp; encodes number and types the rule <u>pushes on</u></li>
+                        <li>types are inferred (in most cases)</li>
+                        <li>RuleN[A :: B :: HNil] — B is pushed <u>after</u> A</li>
+                        <li>aliases</li>
+                    </ul>
+
+<pre><code data-trim class="scala">
+type Rule0               = RuleN[HNil]
+type Rule1[T]            = RuleN[T :: HNil]
+type Rule2[A, B]         = RuleN[A :: B :: HNil]
+type RuleN[L <: HList]   = Rule[HNil, L]
+type PopRule[L <: HList] = Rule[L, HNil]
+</code></pre>
+                </section>
+
+                <section>
+                    <h2>rules groups</h2>
+                    <ul>
+                        <li>basic chars matchers</li>
+                        <li>rules combinators and modifiers</li>
+                        <li>parser actions</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h2>basic chars matchers</h2>
+                    <ul>
+                        <li>match input and cause progress</li>
+                        <li>do nothing with <em>ValueStack</em></li>
+                    </ul>
+
+
+                    <pre class="fragment"><code data-trim class="scala">
+implicit def ch(c: Char): Rule0
+rule { 'a' } ~> rule { ch('a') }
+                    </code></pre>
+
+                    <pre class="fragment"><code data-trim class="scala">
+implicit def str(s: String): Rule0
+rule { "a" } ~> rule { str("a") }
+
+rule { 42 } // compile-time error
+                    </code></pre>
+
+                    <pre class="fragment"><code data-trim class="scala">
+implicit def predicate(p: CharPredicate): Rule0
+CharPredicate.Digit, CharPredicate.LowerHexLetter, etc.
+                    </code></pre>
+
+                    <pre class="fragment"><code data-trim class="scala">
+def anyOf(chars: String): Rule0
+def noneOf(chars: String): Rule0
+
+def ignoreCase(c: Char): Rule0
+def ignoreCase(s: String): Rule0
+                    </code></pre>
+
+                    <pre class="fragment"><code data-trim class="scala">
+def ANY: Rule0
+def EOI: Char
+def MATCH: Rule0
+def MISMATCH[I <: HList, O <: HList]: Rule[I, O]
+def MISMATCH0: Rule0
+                    </code></pre>
+                </section>
+
+                <section>
+                    <h3>rules combinators & modifiers: a ~ b</h3>
+                    <ul>
+                        <li>matches if <em>a</em> matches and then if <em>b</em> matches</li>
+                        <li>type</li>
+                    </ul>
+
+                    <pre><code data-trim class="scala">
+def a: Rule[Int] = // ...
+def b: Rule[String] = // ...
+def c: RuleN[Int :: String :: HNil] = rule { a ~ b }
+                    </code></pre>
+<pre class="fragment"><code data-trim class="scala">
+Rule[     , A    ] ~ Rule[     , B  ] = Rule[     , A:B    ]
+</code></pre>
+
+<pre class="fragment"><code data-trim class="scala">
+Rule[A:B:C, D:E:F] ~ Rule[F    , G:H] = Rule[A:B:C, D:E:G:H]
+</code></pre>
+
+<pre class="fragment"><code data-trim class="scala">
+Rule[A    , B:C  ] ~ Rule[D:B:C, E:F] = Rule[D:A  , E:F]
+</code></pre>
+
+<pre class="fragment"><code data-trim class="scala">
+Rule[A    , B:C  ] ~ Rule[D:C  , E:F] - is Illegal if D != B
+</code></pre>
+                </section>
+
+                <section>
+                    <h3>rules combinators & modifiers</h3>
+<pre style="width: 55%"><code data-trim class="scala">
+a | b
+</code></pre>
+
+<pre style="width: 55%" class="fragment"><code data-trim class="scala">
+!(a)
+&(a) = !(!(a))
+</code></pre>
+
+<pre style="width: 55%" class="fragment"><code data-trim class="scala">
+optional(a) = a | MATCH
+</code></pre>
+
+<pre style="width: 55%" class="fragment"><code data-trim class="scala">
+zeroOrMore(a)
+oneOrMore(a) = a ~ zeroOrMore(a)
+</code></pre>
+
+<pre style="width: 55%" class="fragment"><code data-trim class="scala">
+(count: Int).times(a)
+(10 to 15).times(a)
+</code></pre>
+
+<pre style="width: 55%" class="fragment"><code data-trim class="scala">
+a.separatedBy(separator: Rule0)
+</code></pre>
+                </section>
+
+                <section>
+                    <h2>parser actions</h2>
+                    <ul>
+                        <li>can build recognizers so far: "does it have structure or not?"</li>
+                        <li>need "actions" to produce result</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h2>push</h2>
+
+					<p>pushes value onto <em>ValueStack</em></p>
+
+					<pre><code data-trim class="scala">
+rule { "true" ~ push(true) }
+					</code></pre>
+
+                    <pre class="fragment"><code data-trim class="scala">
+push(e: Unit)       : Rule0    - pushes nothing
+					</code></pre>
+
+					<pre class="fragment"><code data-trim class="scala">
+push(e: L <: HList) : RuleN[L] - pushes all values of L
+					</code></pre>
+
+					<pre class="fragment"><code data-trim class="scala">
+push(e: T)          : Rule1[T] - pushes a value of T
+					</code></pre>
+                </section>
+
+                <section>
+                    <h2>capture</h2>
+
+                    <p>pushes additional matched string onto <em>ValueStack</em></p>
+
+					<pre><code data-trim class="scala">
+rule { capture("42") } - if input matches "42" then pushes "42"
+					</code></pre>
+
+                    <pre class="fragment"><code data-trim class="scala">
+capture(zeroOrMore(CharPredicate.Digit)) : Rule1[String]
+					</code></pre>
+
+					<pre class="fragment"><code data-trim class="scala">
+caputure("true" ~ push(true))            : Rule2[Boolean, String]
+					</code></pre>
+                </section>
+
+				<section>
+                    <h2>a ~> (func)</h2>
+                	<p>transforms top elements of the <em>Value Stack</em> into some other object(s)</p>
+
+                	<pre class="fragment"><code data-trim class="scala">
+(foo: Rule1[String])      ~> ((s: String) ⇒ s.toInt)  : Rule1[Int]
+					</code></pre>
+
+                	<pre class="fragment"><code data-trim class="scala">
+(foo: Rule1[String])      ~> (s ⇒ s.toInt)            : Rule1[Int]
+					</code></pre>
+
+                	<pre class="fragment"><code data-trim class="scala">
+(foo: Rule1[Int, String]) ~> ((i, s) ⇒ i + s.toInt)   : Rule1[String]
+					</code></pre>
+
+                	<pre class="fragment"><code data-trim class="scala">
+(foo: Rule1[String])      ~> (_.toInt)                : Rule1[String]
+					</code></pre>
+
+					<pre class="fragment"><code data-trim class="scala">
+(foo: Rule1[String])      ~> (println(_))             : Rule0
+					</code></pre>
+
+					<pre class="fragment"><code data-trim class="scala">
+(foo: Rule1[String])      ~> (() ⇒ 17)                : Rule2[String, Int]
+(foo: Rule1[String])      ~  push(17)                 : Rule2[String, Int]
+					</code></pre>
+
+					<pre class="fragment"><code data-trim class="scala">
+(foo: Rule1[String]) ~> (s ⇒ s.toInt :: 3.14 :: HNil) : Rule2[String, Int]
+					</code></pre>
+
+					<pre class="fragment"><code data-trim class="scala">
+case class Person(name: String, age: Int)
+
+(foo: Rule2[String, Int]) ~> Person                   : Rule1[Person]
+					</code></pre>
+
+					<pre class="fragment"><code data-trim class="scala">
+(foo: Rule1[Int]) ~> (i => test(i % 2 == 0) ~ push(i)): Rule1[Int]
+					</code></pre>
+                </section>
+
+                <section>
+                    <h2>reduction rules</h2>
+                    <p>parser makes progress leaving <em>value stack</em> unchanged</p>
+
+                    <pre class="fragment"><code data-trim class="scala">
+capture(CharPredicate.Digit) ~ optional("h" ~> ((s: String) => s + "hex"))
+                    </code></pre>
+
+					<pre class="fragment"><code data-trim class="scala">
+(factor: Rule1[Int]) ~ zeroOrMore("*" ~ factor ~> ((a: Int, b) => a * b))
+					</code></pre>
+
+					<pre class="fragment"><code data-trim class="scala">
+(factor: Rule1[Int]) ~ oneOrMore("*" ~ factor ~> ((a: Int, b) => a * b))
+					</code></pre>
+                </section>
+
+                <section>
+                	<h2>calculator</h2>
+
+<pre><code data-trim class="scala">
+> new Calculator("1+2*3").InputLine.run() 
+scala.util.Success(7)
+</code></pre>
+
+<pre class="fragment"><code data-trim class="scala">
+class Calculator(val input: ParserInput) extends Parser {
+</code></pre>
+
+<pre class="fragment"><code data-trim class="scala">
+def Digits = rule { oneOrMore(CharPredicate.Digit) } // Rule1[Stirng]
+
+def Number = rule { capture(Digits) ~> (_.toInt) }   // Rule1[Int]
+</code></pre>
+
+<pre class="fragment"><code data-trim class="scala">
+def Parens = rule { '(' ~ Expression ~ ')' }
+</code></pre>
+
+<pre class="fragment"><code data-trim class="scala">
+def Factor = rule { Number | Parens }
+</code></pre>
+
+<pre class="fragment"><code data-trim class="scala">
+def Term = rule {
+  Factor ~ zeroOrMore(
+    '*' ~ Factor ~> ((_: Int) * _)
+  | '/' ~ Factor ~> ((_: Int) / _))
+}
+</code></pre>
+
+<pre class="fragment"><code data-trim class="scala">
+def Expression: Rule1[Int] = rule {
+  Term ~ zeroOrMore(
+    '+' ~ Term ~> ((_: Int) + _)
+  | '-' ~ Term ~> ((_: Int) - _))
+}
+</code></pre>
+
+<pre class="fragment"><code data-trim class="scala">
   def InputLine = rule { Expression ~ EOI }
 
-  // Рекурсивный вызов в Parens, поэтому нужен тип
-  def Expression: Rule0 = rule { Term ~ zeroOrMore('+' ~ Term | '-' ~ Term) }
-
-  def Term   = rule { Factor ~ zeroOrMore('*' ~ Factor | '/' ~ Factor) }
-
-  def Factor = rule { Number | Parens }
-
-  def Parens = rule { '(' ~ Expression ~ ')' }
-
-  def Number = rule { oneOrMore(CharPredicate.Digit) }
 }
-					</code></pre>
-				</section>
+</code></pre>
+                </section>
+
+                <section>
+                	<h2>under the hood</h2>
+                </section>
 
 				<section>
-					<h2>арифметическое выражение:<br/> да или нет?</h2>
+					<h2>rule macro</h2>
 					<pre><code data-trim class="scala">
-val line = readline()
-val calc = new CalculatorParser(line)
+case class Rule(matched: Boolean)
+</code></pre>
 
-calc.InputLine().run() match {
-  case Success(_) => "Yes" 
-  case Failure(_) => "No"
-}
-					</code></pre>
-				</section>
-
-				<section>
-					<h2>parser actions, value-stack</h2>
-
-					<p>value-stack — отличие от haskell parsec et al.</p>
-
-					<pre><code data-trim class="scala">
-class ValueStack(initialSize: Int, maxSize: Int) extends Iterable[Any] {
-  var buffer = new Array[Any](initialSize)
-  var size   = 0
-}
-					</code></pre>
-
-					<pre><code data-trim class="scala">
-def Digits    = rule { oneOrMore("0" | "1" | /*...*/ "9") } // oneOrMore("0"-"9")
-
-def False     = rule { "false" ~ push(false) } // "false" >>> VStk: [false]
-
-def NumberStr = rule { capture(Digits) } // "42" >>> VStk: ["42"]
-
-def Number    = rule { capture(Digits) ~> (_.toInt) } "42" >>> // VStk: [42]
-
-def Sum       = rule { Number ~ " " ~ Number ~> ((_:Int) + _) } // "11 15" >>> VStk: [26]
-					</code></pre>
-				</section>
-
-				<section>
-				<h2>калькулятор</h2>
-					<pre><code data-trim class="scala">
-class CalculatorParser(val input: ParserInput) extends Parser {
-  def Expression: Rule1[Int] = rule {
-    Term ~ zeroOrMore(
-      '+' ~ Term ~> ((_: Int) + _)
-    | '-' ~ Term ~> ((_: Int) - _))
-  }
-
-  def Term = rule {
-    Factor ~ zeroOrMore(
-      '*' ~ Factor ~> ((_: Int) * _)
-    | '/' ~ Factor ~> ((_: Int) / _))
-  }
-}
-					</code></pre>
-
-					<p>`~>` может передавать элемент AST в стек</p>
-					<p>`~>`-обработчик сам может быть парсером</p>
-				</section>
-
-				<section>
-					<h2>типизация правил и value-stack</h2>
-					<pre style="width: 80%"><code data-trim class="scala">
-def InputRule: Rule[HNil, String :: HNil] = rule { capture("a") }
-
-class Rule[-I <: HList, +O <: HList]
-I - тип значения со стека
-O - тип значения в стек
-					</code></pre>
-
-					<pre style="width: 80%"><code data-trim class="scala">
-type RuleN[L <: HList] = Rule[HNil, L]
-type Rule0 = RuleN[HNil]
-type Rule1[T] = RuleN[T :: HNil]
-type Rule2[A, B] = RuleN[A :: B :: HNil]
-					</code></pre>
-				</section>
-
-				<section>
-					<h2>типизация правил и value-stack</h2>
-					<pre style="width: 105%"><code data-trim class="scala">
-def a:  Rule1[String] = rule { capture("a") }
-
-def b:  Rule1[String] = rule { capture("7") }
-
-def bi: Rule1[Int]    = rule { b ~> ((_:String).toInt) } 
-					</code></pre>
-				</section>
-
-				<section>
-					<h2>типизация правил и value-stack</h2>
-					<pre style="width: 105%"><code data-trim class="scala">
-def c1: Rule2[String, Int] = rule { a ~ bi }
-
-def c2: Rule2[Int, Int] = rule { bi ~ push(42) }
-
-def c3: Rule[Int :: HNil, Int :: HNil] = rule { capture("7") ~> ((x: Int, y: String) => x + y.toInt) }
-					</code></pre>
-				</section>
-
-				<section>
-					<h2>компиляция</h2>
-					<pre><code data-trim class="scala">
+<pre class="fragment"><code data-trim class="scala">
 abstract class Parser {
-  def rule(r: Rule): Rule = macro Parser.ruleImpl
-}
+  def rule(r: Rule): Rule = macro ParserMacros.ruleImpl
 
-object Parser {	
+  def input: ParserInput
+  def __nextChar(): Char = // ...
+  def __cursor: Int = // ...
+}
+</code></pre>
+
+<pre class="fragment"><code data-trim class="scala">
+object ParserMacros {	
   def ruleImpl(ctx: ParserContext)(r: ctx.Expr[Rule]): ctx.Expr[Rule] = 
     reify {
       OpTree(r.tree).render().splice
@@ -577,94 +575,120 @@ object Parser {
   				</section>
 
   				<section>
-					<h2>компиляция</h2>
-					<pre><code data-trim class="scala">
+  					<h2>two step render()</h2>
+  					<ol>
+  						<li>in: Scala compiler AST</li>
+  						<li>IR:  parboiled2 OpTree</li>
+  						<li>out: effective Scala code AST</li>
+  					</ol>
+  				</section>
+
+  				<section>
+  					<h2>quasiquotes match</h2>
+
+  					<pre><code data-trim class="scala">
+def r = rule { "a" }
+def r = rule { str("a") }
+def r = rule { CurrentParser.this.str("a") }
+  					</code></pre>
+
+  					<pre class="fragment"><code data-trim class="scala">
+r.tree = Apply(Select(This(TypeName("CurrentParser")), TermName("str")),
+               List(Literal(Constant("777"))))
+  					</code></pre>
+
+  					<pre class="fragment"><code data-trim class="scala">
+r.tree match {
+  case Apply(Select(_, TermName("str")), List(Literal(Constant(s)))) =>
+    StringMatch(s) // s is "a"
+}
+  					</code></pre>
+
+  					<pre class="fragment"><code data-trim class="scala">
+r.tree match {
+  case q"$a.this.str($s)" => StringMatch(s) // a is CurrentParser
+                                            // s is "a"
+}
+  					</code></pre>
+  				</section>
+
+  				<section>
+  					<h2>OpTree</h2>
+<pre><code data-trim class="scala">
 object OpTree {
   def apply(tree: Tree): OpTree =
-    r.tree match { // квазицитирования
-      case q"$a.this.str($s)" => LiteralString(s)
-      case q"$a.this.ch($ch)" => LiteralChar(ch)
-      case q"$lhs.|($rhs)"    => FirstOf(OpTree(lhs), OpTree(rhs))
-      case q"$lhs.~($rhs)"    => Sequence(OpTree(lhs), OpTree(rhs))
+    r.tree match {
+      case q"$a.this.str($s)" ⇒ StringMatch(s)
+      case q"$a.this.ch($ch)" ⇒ CharMatch(ch)
+      case q"$lhs.|($rhs)"    ⇒ FirstOf(OpTree(lhs), OpTree(rhs))
+      case q"$lhs.~($rhs)"    ⇒ Sequence(OpTree(lhs), OpTree(rhs))
     }
 }
+</code></pre>
 
+<pre class="fragment"><code data-trim class="scala">
 abstract class OpTree {
   def render(): Expr[Rule]
 }
-
-case class Rule(val matched: Boolean)
-					</code></pre>
-				</section>
+class StringMatch(s: Tree)               extends OpTree
+class CharMatch(ch: Tree)                extends OpTree
+class FirstOf(lhs: OpTree, rhs: OpTree)  extends OpTree
+class Sequence(lhs: OpTree, rhs: OpTree) extends OpTree
+</code></pre>
+  				</section>
 
 				<section>
-					<h2>LiteralChar</h2>
+					<h2>CharMatch</h2>
 					<pre><code data-trim class="scala">
-implicit def ch(c: Char): Rule0
-rule { ch('a') }
-case q"$a.this.ch($ch)" => // $a = CalculatorParser, $ch = CharLiteral('a')
-					</code></pre>
-
-					<pre><code data-trim class="scala">
-case class LiteralChar(charTree: Tree) extends OpTree {
+case class CharMatch(charTree: Tree) extends OpTree {
   def render(): Expr[Rule] = reify {
     val char = c.Expr[Char](charTree).splice
-    val p = c.prefix.splice // Current parser
+    val p    = c.prefix.splice // Current parser
     Rule(p.__nextChar() == char)
   }
 }
 					</code></pre>
 				</section>
 
-<!-- 				<section>
-					<h2>char</h2>
-					<pre><code data-trim class="scala">
-reify {
-  if ($ch == p.cursorChar()) {
-    p.advance()
-    Rule.MATCH
-  } else Rule.MISMATCH
-} 
-					</code></pre>
-				</section> -->
-
 				<section>
-					<h2>LiteralString</h2>
+					<h2>StringMatch</h2>
 
 					<pre><code data-trim class="scala">
-implicit def str(c: String): Rule0
-rule { str("abc") }
-case q"$a.this.str($s)" => // $a = CalculatorParser, $s = StringLiteral("abc")
-					</code></pre>
+case class StringMatch(strTree: Tree) extends OpTree {
+  def render(): Expr[Rule] = c.Expr[Rule](q''
+    val p   = ${c.prefix} // Current parser
+    val str = $strTree    // : String
 
-					<pre><code data-trim class="scala">
-case class LiteralString(s: Tree) extends OpTree {
-  def render(): Expr[Rule] = c.Expr[Rule](q`
-    val p = ${c.prefix} // Current parser
+    // Naive
+    val matched = str.forall(c => c == p.__nextChar())
+    Rule(matched)
+
+    // Effective
     var ix = 0
-    while (ix < $s.length && $s.charAt(ix) == p.__nextChar()) {
+    while (ix < str.length && str.charAt(ix) == p.__nextChar()) {
       ix += 1
     }
     Rule(ix == $s.length)
-`)
+'')
 					</code></pre>
 				</section>
 
 				<section>
 					<h2>FirstOf: a | b</h2>
 					<pre><code data-trim class="scala">
-// case q"$lhs.|($rhs)" => 
+// case q"$lhs.|($rhs)" => FirstOf(OpTree(lhs), OpTree(rhs))
 
-case class FirstOf(charTree: Tree) extends OpTree {
-  def render(): Expr[Rule] = c.Expr[Rule](q` 
+case class FirstOf(lhs: OpTree, rhs: OpTree) extends OpTree {
+  def render(): Expr[Rule] = c.Expr[Rule](q''
     val mark = p.__cursor
-    if (${OpTree(lhs).render()}.matched) {
+    if (lhs.render().matched) {
       Rule(true)
     } else {
       p.__cursor = mark
-      ${OpTree(rhs).render()}
+      val res = rhs.render().matched
+      Rule(res)
     }
-  `)
+  '')
 }
 					</code></pre>
 				</section>
@@ -674,40 +698,43 @@ case class FirstOf(charTree: Tree) extends OpTree {
 					<pre><code data-trim class="scala">
 // case q"$lhs.~($rhs)" => 
 
-case class FirstOf(charTree: Tree) extends OpTree {
-  def render(): Expr[Rule] = c.Expr[Rule](q`
-    Rule(${OpTree(lhs).render()}.matched && ${OpTree(rhs).render()}.matched)
-  `)
+case class Sequence(lhs: OpTree, rhs: OpTree) extends OpTree {
+  def render(): Expr[Rule] = c.Expr[Rule](q''
+    val res = lhs.render().matched && rhs.render().matched
+    Rule(res)
+  '')
 }
 					</code></pre>
 				</section>
 
-				<section>
-					<h2>parboiled2.org</h2>
-					<ul>
-						<li>oneOrMore</li>
-						<li>zeroOrMore</li>
-						<li>~></li>
-						<li>...</li>
-					</ul>
+                <section>
+                	<h2>benchmark</h2>
+                	<pre><code data-trim class="scala">
+> cappi::benchmark
+
+            benchmark    ms linear runtime
+        Json4SJackson  4.09 =
+ Parboiled1JsonParser 85.64 ==============================
+             Argonaut  7.01 ==
+         Json4SNative  8.06 ==
+ Parboiled2JsonParser 13.17 ====
+                	</code></pre>
+                </section>
+
+                <section>
+                    <h3>Thanks</h3>
+                    <ul>
+                        <li>Mathias Doenitz (<a href="https://github.com/sirthias/">sirthias@github</a>) for great mentoring</li>
+                        <li>Eugene Burmako (<a href="https://github.com/xeno-by/">xeno-by@github</a>) et al. for Macro Paradise</li>
+                        <li>Scala community</li>
+                    </ul>
 				</section>
 
-				<section>
-					<h2>использование</h2>
-					<ul>
-						<li>json-парсер в ~100 быстрее Scala Parsers, в ~10 parboiled1</li>
-						<li>typesafe, spray.io, spray-json</li>
-					</ul>
-				</section>
-
-				<section>
-					<h3><a href="http://parboiled2.org">parboiled2.org</a></h3>
-					<h4><a href="http://www.linkedin.com/in/alexandermyltsev">linkedin.com/in/alexandermyltsev</a></h4>
-					<h4>вопросы</h4>
-				</section>
-
-			</div>
-
+                <section>
+                    <h2>Q &amp; A</h2>
+                    <h4>@Alex_Myltsev</h4>
+                    <h3><a href="http://parboiled2.org">parboiled2.org</a></h3>
+                </section>
 		</div>
 
 		<script src="lib/js/head.min.js"></script>
@@ -738,7 +765,11 @@ case class FirstOf(charTree: Tree) extends OpTree {
 					{ src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
 					{ src: 'plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
 					{ src: 'plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }
-				]
+				],
+
+                transition: 'none',
+                transitionSpeed: 'fast',
+                backgroundTransition: 'slide'
 			});
 
 		</script>
