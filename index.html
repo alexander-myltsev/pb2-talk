@@ -112,7 +112,7 @@
 					<h3>applications</h3>
 
 					<ul>
-						<li>custom recursive ill structured data — <br/>write grammars, but NOT import lots of dependencies</li>
+						<li>custom recursive ill-structured data — <br/>write grammars, but NOT import lots of dependencies</li>
 						<li>yet another novel programming language or library
 							<ol>
 								<li>unclear requirements</li>
@@ -385,15 +385,19 @@ optional(e: Rule1[T]) : Rule1[Option[T]]
 				</section>
 
 				<section>
-					<h4>rules combinators &amp; modifiers: zeroOrMore(e)</h4>
+					<h4>rules combinators &amp; modifiers: zeroOrMore(e) and oneOrMore(e)</h4>
 					<ul>
-						<li>runs <em>e</em> until it fails</li>
-						<li>always succeeds</li>
+						<li>zeroOrMore runs <em>e</em> until it fails — always succeeds</li>
+
+						<li>oneOrMore runs <em>e</em> until it fails — succeeds if inner rule is succeeded at least once</li>
 					</ul>
 
 <pre style="width: 70%"><code data-trim class="scala">
 zeroOrMore(e: Rule0)    : Rule0
 zeroOrMore(e: Rule1[T]) : Rule1[Seq[T]]
+
+oneOrMore(e: Rule0)     : Rule0
+oneOrMore(e: Rule1[T])  : Rule1[Seq[T]]
 </code></pre>
                 </section>
 
@@ -457,12 +461,12 @@ capture("true" ~ push(true))             : Rule2[Boolean, String]
 (foo: Rule1[String])      ~> (s ⇒ s.toInt)            : Rule1[Int]
 					</code></pre>
 
-                	<pre class="fragment"><code data-trim class="scala">
-(foo: Rule2[Int, String]) ~> ((i, s) ⇒ i + s.toInt)   : Rule1[Int]
+					<pre class="fragment"><code data-trim class="scala">
+(foo: Rule1[String])      ~> (_.toInt)                : Rule1[Int]
 					</code></pre>
 
                 	<pre class="fragment"><code data-trim class="scala">
-(foo: Rule1[String])      ~> (_.toInt)                : Rule1[Int]
+(foo: Rule2[Int, String]) ~> ((i, s) ⇒ i + s.toInt)   : Rule1[Int]
 					</code></pre>
 
 					<pre class="fragment"><code data-trim class="scala">
@@ -491,13 +495,14 @@ reduce "1+2+3+4+5" to (15:Int)
 </code></pre>
 
 <pre class="fragment"><code data-trim class="scala">
-(factor: Rule1[Int]) ~ zeroOrMore("+" ~ factor) : Rule2[Int, Seq[Int]]
+(number: Rule1[Int]) ~ zeroOrMore("+" ~ number) : Rule2[Int, Seq[Int]]
 </code></pre>
 
 <pre class="fragment"><code data-trim class="scala">
-def reductor = "+" ~ factor ~> ((_:Int) + _) : Rule[Int::HNil, Int::HNil]
+def reductor = "+" ~ number ~> 
+               ((a:Int, b: Int) => a + b) : Rule[Int::HNil, Int::HNil]
 
-(factor: Rule1[Int]) ~ zeroOrMore(reductor) : Rule1[Int]
+(number: Rule1[Int]) ~ zeroOrMore(reductor) : Rule1[Int]
 </code></pre>
 
                     <p class="fragment">parser makes progress leaving <em>value stack</em> unchanged</p>
@@ -519,8 +524,8 @@ capture(CharPredicate.Digit) ~ optional("h" ~> ((s: String) ⇒ s + "hex"))
                 	<h3>calculator</h3>
 
 <pre><code data-trim class="scala">
-> new Calculator("1+2*3").InputLine.run() 
-scala.util.Success(7)
+> new Calculator("1+(2+4)*3").InputLine.run() 
+scala.util.Success(25)
 </code></pre>
 
 <pre class="fragment"><code data-trim class="scala">
