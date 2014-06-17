@@ -4,7 +4,7 @@
 	<head>
 		<meta charset="utf-8">
 
-		<title>reveal.js - The HTML Presentation Framework</title>
+		<title>parboiled2</title>
 
 		<meta name="description" content="A framework for easily creating beautiful presentations using HTML">
 		<meta name="author" content="Hakim El Hattab">
@@ -41,7 +41,8 @@
 
         <style>
             .reveal pre {
-                box-shadow: none; }
+                box-shadow: none;
+                width: 120%; }
 
             .reveal pre code {
                 background: none;
@@ -50,6 +51,12 @@
                 max-height: 420px; }
         </style>
 
+		<!--[if lt IE 9]>
+		<script src="lib/js/html5shiv.js"></script>
+		<![endif]-->
+	</head>
+
+	<body>
 		<div class="reveal">
 
 			<!-- Any section element inside of this container is displayed as a slide -->
@@ -59,7 +66,7 @@
 					<h4>a macro-based PEG-parsers generator for Scala 2.10+</h4>
 					<p>
 						<small>
-                            Alexander-Myltsev <br/>
+                            Alexander Myltsev <br/>
                             <a href="https://github.com/alexander-myltsev">alexander-myltsev@github</a> <br/>
 						    <a href="http://www.linkedin.com/in/alexandermyltsev">linkedin.com/in/alexandermyltsev</a> <br/>
                             <a href="http://twitter.com/alex_myltsev">alex_myltsev@twitter</a>
@@ -68,7 +75,7 @@
 				</section>
 
                 <section>
-                    <h2>credentials</h2>
+                    <h3>my credentials</h3>
                     <img style="width:100%" src="lib/contribute.png" alt="application">
                     <ul>
                         <li>a core contributor (Google SoC'13 mostly)</li>
@@ -77,7 +84,7 @@
                 </section>
 
 				<section>
-					<h2>parsing task</h2>
+					<h3>parsing task</h3>
 					<ul>
 						<li>input: stream of characters or bytes</li>
 						<li>output: is it structured? what is the structure?</li>
@@ -101,88 +108,99 @@
 
 				</section>
 
+				<section>
+					<h3>applications</h3>
+
+					<ul>
+						<li>custom recursive ill structured data — <br/>write grammars, but NOT import lots of dependencies</li>
+						<li>yet another novel programming language or library
+							<ol>
+								<li>unclear requirements</li>
+								<li><u>must</u> have low price of change</li>
+								<li>reduce amount of expertise</li>
+							</ol>
+						</li>
+						<li>use Scala combinator parsers or parboiled 1.x? — consider using parboiled2
+					</ul>
+				</section>
+
                 <section>
-                    <h2>requirements</h2>
+                    <h3>requirements</h3>
                     <ol>
                         <li>work inside of Scala ecosystem
                             <ul>
+                                <li>same tools: IDE, debugger, profiler, etc.</li>
                                 <li>Java — not necessary</li>
-                                <li>IDE support</li>
                             </ul>
                         </li>
                         <li>work fast</li>
                         <li>easy to maintain — typed embedded DSL</li>
-                        <li>have few dependencies</li>
+                        <li>few dependencies</li>
                     </ol>
                 </section>
 
                 <section>
-                    <h2>RegEx</h2>
-
-                    <p>can't parse recursive data like</p>
-                    <ol>
-                        <li>arithmetical expression</li>
-                        <li>json</li>
-                        <li>...</li>
-                    </ol>
-                </section>
-
-                <section>
-                    <h2>alternatives (some of...)</h2>
+                    <h3>alternatives (some of)</h3>
                     <ul>
-                        <li>barehanded parser
-                            <ul>
-                                <li><a href="https://github.com/akheron/jansson/blob/master/src/load.c">github.com/akheron/jansson/blob/master/src/load.c</a></li>
-                                <li><a href="https://github.com/douglascrockford/JSON-js/blob/master/json_parse.js">github.com/douglascrockford/JSON-js/blob/master/json_parse.js</a></li>
-                            </ul>
-                        </li>
-                        <li>Antlr — ANother Tool for Language Recognition</li>
+                        <li>barehanded parser</li>
+                        <li>ANTLR — ANother Tool for Language Recognition</li>
                         <li>parser combinators (Haskell Parsec, Scala parser combinators, etc.)</li>
                     </ul>
 
                     <br/><br/>
 
-                    <h4>either different IDE, or slower, or harder to maintain</h4>
+                    <em>either different IDE, or slower, or harder to maintain</em>
                 </section>
 
                 <section>
-                    <h2>parboiled 1.x</h2>
+                    <h3>RegEx</h3>
+
+                    <p>can't parse recursive data: arithmetical expr, json, etc.</p>
+                </section>
+
+                <section>
+                    <h3>parboiled 1.x</h3>
                     <ul>
                         <li>~10 times slower</li>
-                        <li>not very powerful DSL</li>
+                        <li>less powerful DSL</li>
                         <li>more dependencies</li>
                     </ul>
                 </section>
 
 				<section>
 					<h1>parboiled2</h1>
+                    <h4>gentle introduction</h4>
 				</section>
 
-
                 <section>
-                    <h2>core features</h2>
+                    <h3>core features</h3>
                     <ul>
-                        <li>based on PEG — Parsing Expression Grammar</li>
+                        <li>based on PEG — Parsing Expression Grammar
+                        	<ul><li>alternative to context-free grammars</li></ul>
+                        </li>
                         <li>flexible and type-safe DSL</li>
                         <li>compiled rules and performance</li>
+                        <li>parsing errors reporting</li>
                         <li>one parsing phase, no lexer required</li>
                     </ul>
                 </section>
 
                 <section>
-                    <h2>install it</h2>
+                    <h3>install it</h3>
                     <ul>
                         <li>just a Scala lib</li>
                         <li>2.10.4 and 2.11.1</li>
                     </ul>
 
-                    <pre style="width: 85%"><code data-trim class="scala">
-libraryDependencies += "org.parboiled" %% "parboiled" % "2.0.0"
+                    <pre style="width: 100%"><code data-trim class="scala">
+libraryDependencies+= "org.parboiled" %% "parboiled" % "2.0.0"
+
+import org.parboiled2._
                     </code></pre>
                 </section>
 
                 <section>
-                    <h2>toy parser</h2>
+                    <h3>toy parser</h3>
 <pre><code data-trim class="scala">
 abstract class Parser {
   def input: ParserInput
@@ -195,7 +213,7 @@ class ToyParser(val input: ParserInput) extends Parser {
                 </section>
 
                 <section>
-                    <h2>toy parser</h2>
+                    <h3>toy parser</h3>
 <pre><code data-trim class="scala">
 def InputLine = rule { "a" ~ ("b" | "c") }
 </code></pre>
@@ -217,7 +235,7 @@ Try[Unit] = Failure(org.parboiled2.ParseError)
                 </section>
 
                 <section>
-                    <h2>toy parser: step by step</h2>
+                    <h3>toy parser: step by step</h3>
                     <pre><code data-trim class="scala">
 def InputLine = rule { "a" ~ ("b" | "c") }
 
@@ -225,22 +243,22 @@ input: "ac"
                     </code></pre>
 
                     <ol>
-                        <li class="fragment">InputLine starts — calls "~" subrule — cursor is at 0 pos</li>
-                        <li class="fragment">"~" matches left subrule "a", and if succeeds then right subrule "|"</li>
+                        <li class="fragment">InputLine starts — calls "~" subrule — cursor at 0 pos</li>
+                        <li class="fragment">"~" matches left "a", and if succeeds then right "|"</li>
                         <li class="fragment">rule "a" is matched against input(0) — cursor is at 1</li>
-                        <li class="fragment">"|" matches left subrule "b", and if fails then matches subrule "c"</li>
+                        <li class="fragment">"|" matches left "b", and if fails then matches "c"</li>
                         <li class="fragment">"b" is failed to match — cursor stays at 1</li>
-                        <li class="fragment">"c" is succeeded to match — cursor stays at 2</li>
+                        <li class="fragment">"c" is succeeded to match — cursor is moved to 2</li>
                         <li class="fragment">match is successful</li>
                     </ol>
                 </section>
 
                 <section>
-                    <h2>value stack & typed rules</h2>
+                    <h3>value stack & typed rules</h3>
                 </section>
 
                 <section>
-                    <h2>value stack</h2>
+                    <h3>value stack</h3>
                     <ol>
                         <li>rules <u>do not</u> return any value</li>
                         <li>push and pop result from <em>ValueStack</em>
@@ -254,30 +272,37 @@ input: "ac"
                 </section>
 
                 <section>
-                    <h2>rule types</h2>
+                    <h3>rule types</h3>
                     <pre><code data-trim class="scala">
 class Rule[-I <: HList, +O <: HList]
                     </code></pre>
 
                     <ul>
-                        <li><b>I &nbsp; <&colon; HList</b> &nbsp; encodes number and types the rule <u>pops off</u></li>
-                        <li><b>O <&colon; HList</b> &nbsp; encodes number and types the rule <u>pushes on</u></li>
+                        <li><b>I &nbsp; <&colon; HList</b> &nbsp; number and types the rule <u>pops off</u></li>
+                        <li><b>O <&colon; HList</b> &nbsp; number and types the rule <u>pushes on</u></li>
                         <li>types are inferred (in most cases)</li>
-                        <li>RuleN[A :: B :: HNil] — B is pushed <u>after</u> A</li>
                         <li>aliases</li>
                     </ul>
-
-<pre><code data-trim class="scala">
-type Rule0               = RuleN[HNil]
-type Rule1[T]            = RuleN[T :: HNil]
-type Rule2[A, B]         = RuleN[A :: B :: HNil]
+<pre class="fragment"><code data-trim class="scala">
 type RuleN[L <: HList]   = Rule[HNil, L]
+</code></pre>
+<pre class="fragment"><code data-trim class="scala">
+type Rule0               = RuleN[HNil]
+</code></pre>
+<pre class="fragment"><code data-trim class="scala">
+type Rule1[T]            = RuleN[T :: HNil]
+</code></pre>
+<pre class="fragment"><code data-trim class="scala">
+// B is pushed after A
+type Rule2[A, B]         = RuleN[A :: B :: HNil]
+</code></pre>
+<pre class="fragment"><code data-trim class="scala">
 type PopRule[L <: HList] = Rule[L, HNil]
 </code></pre>
                 </section>
 
                 <section>
-                    <h2>rules groups</h2>
+                    <h3>rules groups</h3>
                     <ul>
                         <li>basic chars matchers</li>
                         <li>rules combinators and modifiers</li>
@@ -286,7 +311,7 @@ type PopRule[L <: HList] = Rule[L, HNil]
                 </section>
 
                 <section>
-                    <h2>basic chars matchers</h2>
+                    <h3>basic chars matchers</h3>
                     <ul>
                         <li>match input and cause progress</li>
                         <li>do nothing with <em>ValueStack</em></li>
@@ -295,12 +320,12 @@ type PopRule[L <: HList] = Rule[L, HNil]
 
                     <pre class="fragment"><code data-trim class="scala">
 implicit def ch(c: Char): Rule0
-rule { 'a' } ~> rule { ch('a') }
+rule { 'a' } // rule { ch('a') }
                     </code></pre>
 
                     <pre class="fragment"><code data-trim class="scala">
 implicit def str(s: String): Rule0
-rule { "a" } ~> rule { str("a") }
+rule { "ab" } // rule { str("ab") }
 
 rule { 42 } // compile-time error
                     </code></pre>
@@ -311,95 +336,81 @@ CharPredicate.Digit, CharPredicate.LowerHexLetter, etc.
                     </code></pre>
 
                     <pre class="fragment"><code data-trim class="scala">
-def anyOf(chars: String): Rule0
-def noneOf(chars: String): Rule0
-
-def ignoreCase(c: Char): Rule0
-def ignoreCase(s: String): Rule0
-                    </code></pre>
-
-                    <pre class="fragment"><code data-trim class="scala">
-def ANY: Rule0
 def EOI: Char
-def MATCH: Rule0
-def MISMATCH[I <: HList, O <: HList]: Rule[I, O]
-def MISMATCH0: Rule0
                     </code></pre>
                 </section>
 
                 <section>
-                    <h3>rules combinators & modifiers: a ~ b</h3>
+                    <h3>rules combinators &amp; modifiers: e1 ~ e2</h3>
                     <ul>
-                        <li>matches if <em>a</em> matches and then if <em>b</em> matches</li>
+                        <li>matches if <em>e1</em> matches and then if <em>e2</em> matches</li>
                         <li>type</li>
                     </ul>
 
                     <pre><code data-trim class="scala">
-def a: Rule[Int] = // ...
-def b: Rule[String] = // ...
-def c: RuleN[Int :: String :: HNil] = rule { a ~ b }
+def a: Rule1[Int]         = // ...
+def b: Rule1[String]      = // ...
+def c: Rule2[Int, String] = rule { a ~ b }
                     </code></pre>
-<pre class="fragment"><code data-trim class="scala">
+<pre style="width: 105%" class="fragment"><code data-trim class="scala">
 Rule[     , A    ] ~ Rule[     , B  ] = Rule[     , A:B    ]
-</code></pre>
 
-<pre class="fragment"><code data-trim class="scala">
 Rule[A:B:C, D:E:F] ~ Rule[F    , G:H] = Rule[A:B:C, D:E:G:H]
-</code></pre>
 
-<pre class="fragment"><code data-trim class="scala">
-Rule[A    , B:C  ] ~ Rule[D:B:C, E:F] = Rule[D:A  , E:F]
-</code></pre>
+Rule[A    , B:C  ] ~ Rule[D:B:C, E:F] = Rule[D:A  , E:F    ]
 
-<pre class="fragment"><code data-trim class="scala">
 Rule[A    , B:C  ] ~ Rule[D:C  , E:F] - is Illegal if D != B
 </code></pre>
                 </section>
 
                 <section>
-                    <h3>rules combinators & modifiers</h3>
-<pre style="width: 55%"><code data-trim class="scala">
-a | b
-</code></pre>
+                    <h4>rules combinators &amp; modifiers: e1 | e2</h4>
+                    <ol>
+                    	<li>tries to match <em>e1</em></li>
+                    	<li>if matches then succeeds</li>
+                    	<li>otherwise — result of <em>e2</em> matching</li>
+                    </ol>
+				</section>
 
-<pre style="width: 55%" class="fragment"><code data-trim class="scala">
-!(a)
-&(a) = !(!(a))
+				<section>
+				<h4>rules combinators &amp; modifiers: optional(e)</h4>
+				<ul>
+					<li>tries to match <em>e</em></li>
+					<li>always succeeds, even if <em>a</em> fails to match</li>
+				</ul>
+<pre style="width: 70%"><code data-trim class="scala">
+optional(e: Rule0)    : Rule0
+optional(e: Rule1[T]) : Rule1[Option[T]]
 </code></pre>
+				</section>
 
-<pre style="width: 55%" class="fragment"><code data-trim class="scala">
-optional(a) = a | MATCH
-</code></pre>
+				<section>
+					<h4>rules combinators &amp; modifiers: zeroOrMore(e)</h4>
+					<ul>
+						<li>runs <em>e</em> until it fails</li>
+						<li>always succeeds</li>
+					</ul>
 
-<pre style="width: 55%" class="fragment"><code data-trim class="scala">
-zeroOrMore(a)
-oneOrMore(a) = a ~ zeroOrMore(a)
-</code></pre>
-
-<pre style="width: 55%" class="fragment"><code data-trim class="scala">
-(count: Int).times(a)
-(10 to 15).times(a)
-</code></pre>
-
-<pre style="width: 55%" class="fragment"><code data-trim class="scala">
-a.separatedBy(separator: Rule0)
+<pre style="width: 70%"><code data-trim class="scala">
+zeroOrMore(e: Rule0)    : Rule0
+zeroOrMore(e: Rule1[T]) : Rule1[Seq[T]]
 </code></pre>
                 </section>
 
                 <section>
-                    <h2>parser actions</h2>
+                    <h3>parser actions</h3>
                     <ul>
-                        <li>can build recognizers so far: "does it have structure or not?"</li>
-                        <li>need "actions" to produce result</li>
+                        <li>can build <em>recognizers</em> so far: "does it have structure?"</li>
+                        <li>need <em>"actions"</em> to produce result</li>
                     </ul>
                 </section>
 
                 <section>
-                    <h2>push</h2>
+                    <h3>push</h3>
 
 					<p>pushes value onto <em>ValueStack</em></p>
 
-					<pre><code data-trim class="scala">
+					<pre style="width: 55%"><code data-trim class="scala">
 rule { "true" ~ push(true) }
 					</code></pre>
 
@@ -417,7 +428,7 @@ push(e: T)          : Rule1[T] - pushes a value of T
                 </section>
 
                 <section>
-                    <h2>capture</h2>
+                    <h3>capture</h3>
 
                     <p>pushes additional matched string onto <em>ValueStack</em></p>
 
@@ -430,13 +441,13 @@ capture(zeroOrMore(CharPredicate.Digit)) : Rule1[String]
 					</code></pre>
 
 					<pre class="fragment"><code data-trim class="scala">
-caputure("true" ~ push(true))            : Rule2[Boolean, String]
+capture("true" ~ push(true))             : Rule2[Boolean, String]
 					</code></pre>
                 </section>
 
 				<section>
-                    <h2>a ~> (func)</h2>
-                	<p>transforms top elements of the <em>Value Stack</em> into some other object(s)</p>
+                    <h3>a ~> (func)</h3>
+                	<p>transforms top elements of the <em>Value Stack</em><br/> into some other object(s)</p>
 
                 	<pre class="fragment"><code data-trim class="scala">
 (foo: Rule1[String])      ~> ((s: String) ⇒ s.toInt)  : Rule1[Int]
@@ -447,11 +458,11 @@ caputure("true" ~ push(true))            : Rule2[Boolean, String]
 					</code></pre>
 
                 	<pre class="fragment"><code data-trim class="scala">
-(foo: Rule1[Int, String]) ~> ((i, s) ⇒ i + s.toInt)   : Rule1[String]
+(foo: Rule2[Int, String]) ~> ((i, s) ⇒ i + s.toInt)   : Rule1[Int]
 					</code></pre>
 
                 	<pre class="fragment"><code data-trim class="scala">
-(foo: Rule1[String])      ~> (_.toInt)                : Rule1[String]
+(foo: Rule1[String])      ~> (_.toInt)                : Rule1[Int]
 					</code></pre>
 
 					<pre class="fragment"><code data-trim class="scala">
@@ -464,39 +475,48 @@ caputure("true" ~ push(true))            : Rule2[Boolean, String]
 					</code></pre>
 
 					<pre class="fragment"><code data-trim class="scala">
-(foo: Rule1[String]) ~> (s ⇒ s.toInt :: 3.14 :: HNil) : Rule2[String, Int]
+(foo: Rule1[String]) ~> (s ⇒ s.toInt :: 3.14 :: HNil) : Rule2[Int, Double]
 					</code></pre>
 
 					<pre class="fragment"><code data-trim class="scala">
 case class Person(name: String, age: Int)
-
 (foo: Rule2[String, Int]) ~> Person                   : Rule1[Person]
-					</code></pre>
-
-					<pre class="fragment"><code data-trim class="scala">
-(foo: Rule1[Int]) ~> (i => test(i % 2 == 0) ~ push(i)): Rule1[Int]
 					</code></pre>
                 </section>
 
                 <section>
-                    <h2>reduction rules</h2>
-                    <p>parser makes progress leaving <em>value stack</em> unchanged</p>
+                    <h3>reduction rules</h3>
+<pre><code data-trim class="scala">
+reduce "1+2+3+4+5" to (15:Int)
+</code></pre>
+
+<pre class="fragment"><code data-trim class="scala">
+(factor: Rule1[Int]) ~ zeroOrMore("+" ~ factor) : Rule2[Int, Seq[Int]]
+</code></pre>
+
+<pre class="fragment"><code data-trim class="scala">
+def reductor = "+" ~ factor ~> ((_:Int) + _) : Rule[Int::HNil, Int::HNil]
+
+(factor: Rule1[Int]) ~ zeroOrMore(reductor) : Rule1[Int]
+</code></pre>
+
+                    <p class="fragment">parser makes progress leaving <em>value stack</em> unchanged</p>
 
                     <pre class="fragment"><code data-trim class="scala">
-capture(CharPredicate.Digit) ~ optional("h" ~> ((s: String) => s + "hex"))
+capture(CharPredicate.Digit) ~ optional("h" ~> ((s: String) ⇒ s + "hex"))
                     </code></pre>
 
 					<pre class="fragment"><code data-trim class="scala">
-(factor: Rule1[Int]) ~ zeroOrMore("*" ~ factor ~> ((a: Int, b) => a * b))
+(factor: Rule1[Int]) ~ zeroOrMore("*" ~ factor ~> ((a: Int, b) ⇒ a * b))
 					</code></pre>
 
 					<pre class="fragment"><code data-trim class="scala">
-(factor: Rule1[Int]) ~ oneOrMore("*" ~ factor ~> ((a: Int, b) => a * b))
+(factor: Rule1[Int]) ~ oneOrMore("*" ~ factor ~> ((a: Int, b) ⇒ a * b))
 					</code></pre>
                 </section>
 
                 <section>
-                	<h2>calculator</h2>
+                	<h3>calculator</h3>
 
 <pre><code data-trim class="scala">
 > new Calculator("1+2*3").InputLine.run() 
@@ -522,24 +542,18 @@ def Factor = rule { Number | Parens }
 </code></pre>
 
 <pre class="fragment"><code data-trim class="scala">
-def Term = rule {
-  Factor ~ zeroOrMore(
-    '*' ~ Factor ~> ((_: Int) * _)
-  | '/' ~ Factor ~> ((_: Int) / _))
-}
+def Term = rule { Factor ~ zeroOrMore('*' ~ Factor ~> ((_: Int) * _)
+                                    | '/' ~ Factor ~> ((_: Int) / _)) }
 </code></pre>
 
 <pre class="fragment"><code data-trim class="scala">
-def Expression: Rule1[Int] = rule {
-  Term ~ zeroOrMore(
-    '+' ~ Term ~> ((_: Int) + _)
-  | '-' ~ Term ~> ((_: Int) - _))
-}
+def Expression: Rule1[Int] = rule { 
+  Term ~ zeroOrMore('+' ~ Term ~> ((_: Int) + _)
+                  | '-' ~ Term ~> ((_: Int) - _)) }
 </code></pre>
 
 <pre class="fragment"><code data-trim class="scala">
   def InputLine = rule { Expression ~ EOI }
-
 }
 </code></pre>
                 </section>
@@ -549,7 +563,7 @@ def Expression: Rule1[Int] = rule {
                 </section>
 
 				<section>
-					<h2>rule macro</h2>
+					<h3>rule macro</h3>
 					<pre><code data-trim class="scala">
 case class Rule(matched: Boolean)
 </code></pre>
@@ -566,25 +580,31 @@ abstract class Parser {
 
 <pre class="fragment"><code data-trim class="scala">
 object ParserMacros {	
-  def ruleImpl(ctx: ParserContext)(r: ctx.Expr[Rule]): ctx.Expr[Rule] = 
-    reify {
-      OpTree(r.tree).render().splice
-    }
+  def ruleImpl(ctx: ParserContext)(r: ctx.Expr[Rule]): ctx.Expr[Rule] = {
+    // ...
+  }
 } 
   					</code></pre>
   				</section>
 
   				<section>
-  					<h2>two step render()</h2>
+  					<h3>two step render()</h3>
+<pre><code data-trim class="scala">
+def ruleImpl(ctx: ParserContext)(r: ctx.Expr[Rule]): ctx.Expr[Rule] = 
+  reify {
+    OpTree(r.tree).render().splice
+  }
+    </code></pre>
+
   					<ol>
-  						<li>in: Scala compiler AST</li>
+  						<li>input: Scala compiler AST</li>
   						<li>IR:  parboiled2 OpTree</li>
-  						<li>out: effective Scala code AST</li>
+  						<li>output: effective Scala code AST</li>
   					</ol>
   				</section>
 
   				<section>
-  					<h2>quasiquotes match</h2>
+  					<h3>quasiquotes match</h3>
 
   					<pre><code data-trim class="scala">
 def r = rule { "a" }
@@ -594,26 +614,26 @@ def r = rule { CurrentParser.this.str("a") }
 
   					<pre class="fragment"><code data-trim class="scala">
 r.tree = Apply(Select(This(TypeName("CurrentParser")), TermName("str")),
-               List(Literal(Constant("777"))))
+               List(Literal(Constant("a"))))
   					</code></pre>
 
   					<pre class="fragment"><code data-trim class="scala">
 r.tree match {
-  case Apply(Select(_, TermName("str")), List(Literal(Constant(s)))) =>
+  case Apply(Select(_, TermName("str")), List(Literal(Constant(s)))) ⇒
     StringMatch(s) // s is "a"
 }
   					</code></pre>
 
   					<pre class="fragment"><code data-trim class="scala">
 r.tree match {
-  case q"$a.this.str($s)" => StringMatch(s) // a is CurrentParser
-                                            // s is "a"
+  case q"$a.this.str($s)" ⇒ StringMatch(s) // a is CurrentParser
+                                           // s is "a"
 }
   					</code></pre>
   				</section>
 
   				<section>
-  					<h2>OpTree</h2>
+  					<h3>OpTree</h3>
 <pre><code data-trim class="scala">
 object OpTree {
   def apply(tree: Tree): OpTree =
@@ -630,20 +650,20 @@ object OpTree {
 abstract class OpTree {
   def render(): Expr[Rule]
 }
-class StringMatch(s: Tree)               extends OpTree
-class CharMatch(ch: Tree)                extends OpTree
-class FirstOf(lhs: OpTree, rhs: OpTree)  extends OpTree
-class Sequence(lhs: OpTree, rhs: OpTree) extends OpTree
+case class StringMatch(strTree: Tree)         extends OpTree
+case class CharMatch(charTree: Tree)          extends OpTree
+case class FirstOf(lhs: OpTree, rhs: OpTree)  extends OpTree
+case class Sequence(lhs: OpTree, rhs: OpTree) extends OpTree
 </code></pre>
   				</section>
 
 				<section>
-					<h2>CharMatch</h2>
+					<h3>CharMatch</h3>
 					<pre><code data-trim class="scala">
 case class CharMatch(charTree: Tree) extends OpTree {
   def render(): Expr[Rule] = reify {
-    val char = c.Expr[Char](charTree).splice
     val p    = c.prefix.splice // Current parser
+    val char = c.Expr[Char](charTree).splice
     Rule(p.__nextChar() == char)
   }
 }
@@ -651,7 +671,7 @@ case class CharMatch(charTree: Tree) extends OpTree {
 				</section>
 
 				<section>
-					<h2>StringMatch</h2>
+					<h3>StringMatch: naive</h3>
 
 					<pre><code data-trim class="scala">
 case class StringMatch(strTree: Tree) extends OpTree {
@@ -659,24 +679,34 @@ case class StringMatch(strTree: Tree) extends OpTree {
     val p   = ${c.prefix} // Current parser
     val str = $strTree    // : String
 
-    // Naive
-    val matched = str.forall(c => c == p.__nextChar())
-    Rule(matched)
-
-    // Effective
-    var ix = 0
-    while (ix < str.length && str.charAt(ix) == p.__nextChar()) {
-      ix += 1
-    }
-    Rule(ix == $s.length)
+    val res = str.forall(c ⇒ c == p.__nextChar())
+    Rule(res)
 '')
 					</code></pre>
 				</section>
 
 				<section>
-					<h2>FirstOf: a | b</h2>
+					<h3>StringMatch: effective</h2>
+
 					<pre><code data-trim class="scala">
-// case q"$lhs.|($rhs)" => FirstOf(OpTree(lhs), OpTree(rhs))
+case class StringMatch(strTree: Tree) extends OpTree {
+  def render(): Expr[Rule] = c.Expr[Rule](q''
+    val p   = ${c.prefix} // Current parser
+    val str = $strTree    // : String
+
+    var ix = 0
+    while (ix < str.length && str.charAt(ix) == p.__nextChar()) {
+      ix += 1
+    }
+    Rule(ix == str.length)
+'')
+					</code></pre>
+				</section>
+
+				<section>
+					<h3>FirstOf: a | b</h3>
+					<pre><code data-trim class="scala">
+// case q"$lhs.|($rhs)" ⇒ FirstOf(OpTree(lhs), OpTree(rhs))
 
 case class FirstOf(lhs: OpTree, rhs: OpTree) extends OpTree {
   def render(): Expr[Rule] = c.Expr[Rule](q''
@@ -694,9 +724,9 @@ case class FirstOf(lhs: OpTree, rhs: OpTree) extends OpTree {
 				</section>
 
 				<section>
-					<h2>Sequence: a ~ b</h2>
+					<h3>Sequence: a ~ b</h3>
 					<pre><code data-trim class="scala">
-// case q"$lhs.~($rhs)" => 
+// case q"$lhs.~($rhs)" ⇒ Sequence(OpTree(lhs), OpTree(rhs))
 
 case class Sequence(lhs: OpTree, rhs: OpTree) extends OpTree {
   def render(): Expr[Rule] = c.Expr[Rule](q''
@@ -708,7 +738,7 @@ case class Sequence(lhs: OpTree, rhs: OpTree) extends OpTree {
 				</section>
 
                 <section>
-                	<h2>benchmark</h2>
+                	<h3>benchmark</h3>
                 	<pre><code data-trim class="scala">
 > cappi::benchmark
 
@@ -724,7 +754,7 @@ case class Sequence(lhs: OpTree, rhs: OpTree) extends OpTree {
                 <section>
                     <h3>Thanks</h3>
                     <ul>
-                        <li>Mathias Doenitz (<a href="https://github.com/sirthias/">sirthias@github</a>) for great mentoring</li>
+                        <li>Mathias Doenitz (<a href="https://github.com/sirthias/">sirthias@github</a>) for mentoring</li>
                         <li>Eugene Burmako (<a href="https://github.com/xeno-by/">xeno-by@github</a>) et al. for Macro Paradise</li>
                         <li>Scala community</li>
                     </ul>
