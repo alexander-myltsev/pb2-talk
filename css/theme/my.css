@@ -3,7 +3,7 @@
  * Author: Achim Staebler
  */
 @import url(https://fonts.googleapis.com/css?family=Montserrat:700);
-@import url(https://fonts.googleapis.com/css?family=Myriad+Pro:400,700,400italic,700italic);
+@import url(https://fonts.googleapis.com/css?family=PT+Sans:400,700,400italic,700italic);
 /**
  * Solarized colors by Ethan Schoonover
  */
@@ -19,7 +19,7 @@ body {
   background-color: #002b36; }
 
 .reveal {
-  font-family: "Myriad Pro", sans-serif;
+  font-family: "PT Sans", sans-serif;
   font-size: 35px;
   font-weight: normal;
   letter-spacing: -0.02em;

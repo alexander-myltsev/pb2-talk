@@ -24,7 +24,7 @@
 
 // Include theme-specific fonts
 @import url(https://fonts.googleapis.com/css?family=Montserrat:700);
-@import url(https://fonts.googleapis.com/css?family=Myriad+Pro:400,700,400italic,700italic);
+@import url(https://fonts.googleapis.com/css?family=PT+Sans:400,700,400italic,700italic);
 
 /**
  * Solarized colors by Ethan Schoonover
@@ -54,7 +54,7 @@ $green:     #859900;
 
 // Override theme settings (see ../template/settings.scss)
 $headingTextTransform: none;
-$mainFont: 'Myriad Pro', sans-serif;
+$mainFont: 'PT Sans', sans-serif;
 $linkColor: #e7ad52;
 $linkColorHover: lighten( $linkColor, 20% );
 $selectionBackgroundColor: #e7ad52;

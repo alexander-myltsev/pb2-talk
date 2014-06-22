@@ -1,99 +1,115 @@
 ﻿<!doctype html>
 <html lang="en">
-
 	<head>
-		<meta charset="utf-8">
+		<meta charset="utf-8" />
 
 		<title>parboiled2</title>
 
-		<meta name="description" content="A framework for easily creating beautiful presentations using HTML">
-		<meta name="author" content="Hakim El Hattab">
+		<meta name="description" content="A framework for easily creating beautiful presentations using HTML" />
+		<meta name="author" content="Hakim El Hattab" />
 
 		<meta name="apple-mobile-web-app-capable" content="yes" />
 		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 
-		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 
-		<link rel="stylesheet" href="css/reveal.min.css">
-		<!-- <link rel="stylesheet" href="http://spray.io/wjax/css/theme/sirthias.css" id="theme"> -->
-		<link rel="stylesheet" href="css/theme/my.css" id="theme">
+		<link rel="stylesheet" href="css/reveal.min.css" />
+		<link rel="stylesheet" href="css/theme/my.css" id="theme" />
 
 		<!-- For syntax highlighting -->
-		<link rel="stylesheet" href="lib/css/zenburn.css">
+		<link rel="stylesheet" href="lib/css/zenburn.css" />
 
 		<!-- If the query includes 'print-pdf', include the PDF print sheet -->
-		<script>
-			if( window.location.search.match( /print-pdf/gi ) ) {
-				var link = document.createElement( 'link' );
+		<script type="text/javascript">
+			if (window.location.search.match(/print-pdf/gi)) {
+				var link = document.createElement('link');
+
 				link.rel = 'stylesheet';
 				link.type = 'text/css';
 				link.href = 'css/print/pdf.css';
-				document.getElementsByTagName( 'head' )[0].appendChild( link );
+
+				document.getElementsByTagName( 'head' )[0].appendChild(link);
 			}
 		</script>
 
 		<!--[if lt IE 9]>
-		<script src="lib/js/html5shiv.js"></script>
+		    <script type="text/javascript" src="lib/js/html5shiv.js"></script>
 		<![endif]-->
-	</head>
 
-	<body>
+        <style type="text/css">
+            body {
+                background-image: url(lib/loader.gif);
+                background-repeat: no-repeat;
+                background-position: center center;
+            }
 
-        <style>
+            body.loaded {
+                background-image: none;
+            }
+
+            .reveal {
+                opacity: 0;
+                filter: alpha(opacity=0);
+                transition: opacity 0.5s linear;
+                -o-transition: opacity 0.5s linear;
+                -webkit-transition: opacity 0.5s linear;
+                -moz-transition: opacity 0.5s linear;
+            }
+
+            body.loaded .reveal {
+                opacity: 1;
+                filter: alpha(opacity=100);
+            }
+
             .reveal pre {
                 box-shadow: none;
-                width: 120%; }
+                width: 120%;
+            }
 
             .reveal pre code {
                 background: none;
                 font-size: 1.2em;
                 line-height: 1.1em;
-                max-height: 420px; }
+                max-height: 420px;
+            }
         </style>
 
 		<!--[if lt IE 9]>
-		<script src="lib/js/html5shiv.js"></script>
+		    <script type="text/javascript" src="lib/js/html5shiv.js"></script>
 		<![endif]-->
 	</head>
-
 	<body>
 		<div class="reveal">
-
-			<!-- Any section element inside of this container is displayed as a slide -->
 			<div class="slides">
 				<section>
 					<h1>parboiled2</h1>
-					<h4>a macro-based PEG-parsers generator for Scala 2.10+</h4>
+					<h4>a macro-based PEG-parsers<br />generator for Scala 2.10+</h4>
 					<p>
 						<small>
-                            Alexander Myltsev <br/>
-                            <a href="https://github.com/alexander-myltsev">alexander-myltsev@github</a> <br/>
-						    <a href="http://www.linkedin.com/in/alexandermyltsev">linkedin.com/in/alexandermyltsev</a> <br/>
+                            Alexander Myltsev <br />
+                            <a href="https://github.com/alexander-myltsev">alexander-myltsev@github</a><br />
+						    <a href="http://www.linkedin.com/in/alexandermyltsev">linkedin.com/in/alexandermyltsev</a><br />
                             <a href="http://twitter.com/alex_myltsev">alex_myltsev@twitter</a>
                         </small>
 					</p>
 				</section>
-
                 <section>
                     <h3>my credentials</h3>
-                    <img style="width:100%" src="lib/contribute.png" alt="application">
+                    <img style="width:100%" src="lib/contribute.png" alt="application" />
                     <ul>
                         <li>a core contributor (Google SoC'13 mostly)</li>
                         <li>a core contributor to scala-js porting</li>
                     </ul>
                 </section>
-
 				<section>
 					<h3>parsing task</h3>
 					<ul>
 						<li>input: stream of characters or bytes</li>
 						<li>output: is it structured? what is the structure?</li>
 					</ul>
-
-					<br/><br/>
-
+					<br />
+                    <br />
                     example:
-
 					<pre><code data-trim class="scala">
 1 + 2 * 3
 
@@ -105,25 +121,21 @@
                                   / \
                                  2   3
                     </code></pre>
-
 				</section>
-
 				<section>
 					<h3>applications</h3>
-
 					<ul>
-						<li>custom recursive ill-structured data — <br/>write grammars, but NOT import lots of dependencies</li>
+						<li>custom recursive ill-structured data — <br />write grammars, but NOT import lots of dependencies</li>
 						<li>yet another novel programming language or library
 							<ol>
 								<li>unclear requirements</li>
-								<li><u>must</u> have low price of change</li>
+								<li><span style="text-decoration: underline;">must</span> have low price of change</li>
 								<li>reduce amount of expertise</li>
 							</ol>
 						</li>
 						<li>use Scala combinator parsers or parboiled 1.x? — consider using parboiled2
 					</ul>
 				</section>
-
                 <section>
                     <h3>requirements</h3>
                     <ol>
@@ -138,7 +150,6 @@
                         <li>few dependencies</li>
                     </ol>
                 </section>
-
                 <section>
                     <h3>alternatives (some of)</h3>
                     <ul>
@@ -146,18 +157,14 @@
                         <li>ANTLR — ANother Tool for Language Recognition</li>
                         <li>parser combinators (Haskell Parsec, Scala parser combinators, etc.)</li>
                     </ul>
-
-                    <br/><br/>
-
+                    <br />
+                    <br />
                     <em>either different IDE, or slower, or harder to maintain</em>
                 </section>
-
                 <section>
                     <h3>RegEx</h3>
-
                     <p>can't parse recursive data: arithmetical expr, json, etc.</p>
                 </section>
-
                 <section>
                     <h3>parboiled 1.x</h3>
                     <ul>
@@ -166,17 +173,17 @@
                         <li>more dependencies</li>
                     </ul>
                 </section>
-
 				<section>
 					<h1>parboiled2</h1>
                     <h4>gentle introduction</h4>
 				</section>
-
                 <section>
                     <h3>core features</h3>
                     <ul>
                         <li>based on PEG — Parsing Expression Grammar
-                        	<ul><li>alternative to context-free grammars</li></ul>
+                        	<ul>
+                                <li>alternative to context-free grammars</li>
+                            </ul>
                         </li>
                         <li>flexible and type-safe DSL</li>
                         <li>compiled rules and performance</li>
@@ -184,24 +191,21 @@
                         <li>one parsing phase, no lexer required</li>
                     </ul>
                 </section>
-
                 <section>
                     <h3>install it</h3>
                     <ul>
                         <li>just a Scala lib</li>
                         <li>2.10.4 and 2.11.1</li>
                     </ul>
-
                     <pre style="width: 100%"><code data-trim class="scala">
 libraryDependencies+= "org.parboiled" %% "parboiled" % "2.0.0"
 
 import org.parboiled2._
                     </code></pre>
                 </section>
-
                 <section>
                     <h3>toy parser</h3>
-<pre><code data-trim class="scala">
+                    <pre><code data-trim class="scala">
 abstract class Parser {
   def input: ParserInput
 }
@@ -209,31 +213,26 @@ abstract class Parser {
 class ToyParser(val input: ParserInput) extends Parser {
   def InputLine = rule { "a" ~ ("b" | "c") }
 }
-</code></pre>
+                    </code></pre>
                 </section>
-
                 <section>
                     <h3>toy parser</h3>
-<pre><code data-trim class="scala">
+                    <pre><code data-trim class="scala">
 def InputLine = rule { "a" ~ ("b" | "c") }
-</code></pre>
-
-<pre class="fragment"><code data-trim class="scala">
+                    </code></pre>
+                    <pre class="fragment"><code data-trim class="scala">
 > new ToyParser("ab").InputLine.run()
 Try[Unit] = Success(())
-</code></pre>
-
-<pre class="fragment"><code data-trim class="scala">
+                    </code></pre>
+                    <pre class="fragment"><code data-trim class="scala">
 > new ToyParser("ac").InputLine.run()
 Try[Unit] = Success(())
-</code></pre>
-
-<pre class="fragment"><code data-trim class="scala">
+                    </code></pre>
+                    <pre class="fragment"><code data-trim class="scala">
 > new ToyParser("d").InputLine.run()
 Try[Unit] = Failure(org.parboiled2.ParseError)
-</code></pre>
+                    </code></pre>
                 </section>
-
                 <section>
                     <h3>toy parser: step by step</h3>
                     <pre><code data-trim class="scala">
@@ -241,7 +240,6 @@ def InputLine = rule { "a" ~ ("b" | "c") }
 
 input: "ac"
                     </code></pre>
-
                     <ol>
                         <li class="fragment">InputLine starts — calls "~" subrule — cursor at 0 pos</li>
                         <li class="fragment">"~" matches left "a", and if succeeds then right "|"</li>
@@ -252,15 +250,13 @@ input: "ac"
                         <li class="fragment">match is successful</li>
                     </ol>
                 </section>
-
                 <section>
                     <h3>value stack & typed rules</h3>
                 </section>
-
                 <section>
                     <h3>value stack</h3>
                     <ol>
-                        <li>rules <u>do not</u> return any value</li>
+                        <li>rules <span style="text-decoration: underline;">do not</span> return any value</li>
                         <li>push and pop result from <em>ValueStack</em>
                             <ul>
                                 <li>implicit temporary storage</li>
@@ -270,37 +266,34 @@ input: "ac"
                         <li>rule is typed according to its interaction with <em>ValueStack</em></li>
                     </ol>
                 </section>
-
                 <section>
                     <h3>rule types</h3>
                     <pre><code data-trim class="scala">
-class Rule[-I <: HList, +O <: HList]
+class Rule[-I &lt;: HList, +O &lt;: HList]
                     </code></pre>
-
                     <ul>
-                        <li><b>I &nbsp; <&colon; HList</b> &nbsp; number and types the rule <u>pops off</u></li>
-                        <li><b>O <&colon; HList</b> &nbsp; number and types the rule <u>pushes on</u></li>
+                        <li><b>I &nbsp; &lt;&colon; HList</b> &nbsp; number and types the rule <span style="text-decoration: underline;">pops off</span></li>
+                        <li><b>O &lt;&colon; HList</b> &nbsp; number and types the rule <span style="text-decoration: underline;">pushes on</span></li>
                         <li>types are inferred (in most cases)</li>
                         <li>aliases</li>
                     </ul>
-<pre class="fragment"><code data-trim class="scala">
-type RuleN[L <: HList]   = Rule[HNil, L]
-</code></pre>
-<pre class="fragment"><code data-trim class="scala">
+                    <pre class="fragment"><code data-trim class="scala">
+type RuleN[L &lt;: HList]   = Rule[HNil, L]
+                    </code></pre>
+                    <pre class="fragment"><code data-trim class="scala">
 type Rule0               = RuleN[HNil]
-</code></pre>
-<pre class="fragment"><code data-trim class="scala">
+                    </code></pre>
+                    <pre class="fragment"><code data-trim class="scala">
 type Rule1[T]            = RuleN[T :: HNil]
-</code></pre>
-<pre class="fragment"><code data-trim class="scala">
+                    </code></pre>
+                    <pre class="fragment"><code data-trim class="scala">
 // B is pushed after A
 type Rule2[A, B]         = RuleN[A :: B :: HNil]
-</code></pre>
-<pre class="fragment"><code data-trim class="scala">
-type PopRule[L <: HList] = Rule[L, HNil]
-</code></pre>
+                    </code></pre>
+                    <pre class="fragment"><code data-trim class="scala">
+type PopRule[L &lt;: HList] = Rule[L, HNil]
+                    </code></pre>
                 </section>
-
                 <section>
                     <h3>rules groups</h3>
                     <ul>
@@ -309,50 +302,42 @@ type PopRule[L <: HList] = Rule[L, HNil]
                         <li>parser actions</li>
                     </ul>
                 </section>
-
                 <section>
                     <h3>basic chars matchers</h3>
                     <ul>
                         <li>match input and cause progress</li>
                         <li>do nothing with <em>ValueStack</em></li>
                     </ul>
-
-
                     <pre class="fragment"><code data-trim class="scala">
 implicit def ch(c: Char): Rule0
 rule { 'a' } // rule { ch('a') }
                     </code></pre>
-
                     <pre class="fragment"><code data-trim class="scala">
 implicit def str(s: String): Rule0
 rule { "ab" } // rule { str("ab") }
 
 rule { 42 } // compile-time error
                     </code></pre>
-
                     <pre class="fragment"><code data-trim class="scala">
 implicit def predicate(p: CharPredicate): Rule0
 CharPredicate.Digit, CharPredicate.LowerHexLetter, etc.
                     </code></pre>
-
                     <pre class="fragment"><code data-trim class="scala">
 def EOI: Char
                     </code></pre>
                 </section>
-
                 <section>
-                    <h3>rules combinators &amp; modifiers: e1 ~ e2</h3>
+                    <h3>rules combinators &amp; modifiers:<br />e1 ~ e2</h3>
                     <ul>
                         <li>matches if <em>e1</em> matches and then if <em>e2</em> matches</li>
                         <li>type</li>
                     </ul>
-
                     <pre><code data-trim class="scala">
 def a: Rule1[Int]         = // ...
 def b: Rule1[String]      = // ...
 def c: Rule2[Int, String] = rule { a ~ b }
                     </code></pre>
-<pre style="width: 105%" class="fragment"><code data-trim class="scala">
+                    <pre style="width: 105%" class="fragment"><code data-trim class="scala">
 Rule[     , A    ] ~ Rule[     , B  ] = Rule[     , A:B    ]
 
 Rule[A:B:C, D:E:F] ~ Rule[F    , G:H] = Rule[A:B:C, D:E:G:H]
@@ -360,9 +345,8 @@ Rule[A:B:C, D:E:F] ~ Rule[F    , G:H] = Rule[A:B:C, D:E:G:H]
 Rule[A    , B:C  ] ~ Rule[D:B:C, E:F] = Rule[D:A  , E:F    ]
 
 Rule[A    , B:C  ] ~ Rule[D:C  , E:F] - is Illegal if D != B
-</code></pre>
+                    </code></pre>
                 </section>
-
                 <section>
                     <h4>rules combinators &amp; modifiers: e1 | e2</h4>
                     <ol>
@@ -371,36 +355,32 @@ Rule[A    , B:C  ] ~ Rule[D:C  , E:F] - is Illegal if D != B
                     	<li>otherwise — result of <em>e2</em> matching</li>
                     </ol>
 				</section>
-
 				<section>
-				<h4>rules combinators &amp; modifiers: optional(e)</h4>
-				<ul>
-					<li>tries to match <em>e</em></li>
-					<li>always succeeds, even if <em>a</em> fails to match</li>
-				</ul>
-<pre style="width: 70%"><code data-trim class="scala">
+				    <h4>rules combinators &amp; modifiers: optional(e)</h4>
+				    <ul>
+					    <li>tries to match <em>e</em></li>
+					    <li>always succeeds, even if <em>a</em> fails to match</li>
+				    </ul>
+                    <pre style="width: 70%"><code data-trim class="scala">
 optional(e: Rule0)    : Rule0
 optional(e: Rule1[T]) : Rule1[Option[T]]
-</code></pre>
+                    </code></pre>
 				</section>
-
 				<section>
-					<h4>rules combinators &amp; modifiers: zeroOrMore(e) and oneOrMore(e)</h4>
+					<h4>rules combinators &amp; modifiers:<br />zeroOrMore(e) and oneOrMore(e)</h4>
 					<ul>
 						<li>zeroOrMore runs <em>e</em> until it fails — always succeeds</li>
 
 						<li>oneOrMore runs <em>e</em> until it fails — succeeds if inner rule is succeeded at least once</li>
 					</ul>
-
-<pre style="width: 70%"><code data-trim class="scala">
+                    <pre style="width: 70%"><code data-trim class="scala">
 zeroOrMore(e: Rule0)    : Rule0
 zeroOrMore(e: Rule1[T]) : Rule1[Seq[T]]
 
 oneOrMore(e: Rule0)     : Rule0
 oneOrMore(e: Rule1[T])  : Rule1[Seq[T]]
-</code></pre>
+                    </code></pre>
                 </section>
-
                 <section>
                     <h3>parser actions</h3>
                     <ul>
@@ -408,172 +388,120 @@ oneOrMore(e: Rule1[T])  : Rule1[Seq[T]]
                         <li>need <em>"actions"</em> to produce result</li>
                     </ul>
                 </section>
-
                 <section>
                     <h3>push</h3>
-
 					<p>pushes value onto <em>ValueStack</em></p>
-
 					<pre style="width: 55%"><code data-trim class="scala">
 rule { "true" ~ push(true) }
 					</code></pre>
-
                     <pre class="fragment"><code data-trim class="scala">
 push(e: Unit)       : Rule0    - pushes nothing
 					</code></pre>
-
 					<pre class="fragment"><code data-trim class="scala">
-push(e: L <: HList) : RuleN[L] - pushes all values of L
+push(e: L &lt;: HList) : RuleN[L] - pushes all values of L
 					</code></pre>
-
 					<pre class="fragment"><code data-trim class="scala">
 push(e: T)          : Rule1[T] - pushes a value of T
 					</code></pre>
                 </section>
-
                 <section>
                     <h3>capture</h3>
-
                     <p>pushes additional matched string onto <em>ValueStack</em></p>
-
 					<pre><code data-trim class="scala">
 rule { capture("42") } - if input matches "42" then pushes "42"
 					</code></pre>
-
                     <pre class="fragment"><code data-trim class="scala">
 capture(zeroOrMore(CharPredicate.Digit)) : Rule1[String]
 					</code></pre>
-
 					<pre class="fragment"><code data-trim class="scala">
 capture("true" ~ push(true))             : Rule2[Boolean, String]
 					</code></pre>
                 </section>
-
 				<section>
                     <h3>a ~> (func)</h3>
-                	<p>transforms top elements of the <em>Value Stack</em><br/> into some other object(s)</p>
-
+                	<p>transforms top elements of the <em>Value Stack</em><br /> into some other object(s)</p>
                 	<pre class="fragment"><code data-trim class="scala">
 (foo: Rule1[String])      ~> ((s: String) ⇒ s.toInt)  : Rule1[Int]
 					</code></pre>
-
                 	<pre class="fragment"><code data-trim class="scala">
 (foo: Rule1[String])      ~> (s ⇒ s.toInt)            : Rule1[Int]
 					</code></pre>
-
 					<pre class="fragment"><code data-trim class="scala">
 (foo: Rule1[String])      ~> (_.toInt)                : Rule1[Int]
 					</code></pre>
-
                 	<pre class="fragment"><code data-trim class="scala">
 (foo: Rule2[Int, String]) ~> ((i, s) ⇒ i + s.toInt)   : Rule1[Int]
 					</code></pre>
-
 					<pre class="fragment"><code data-trim class="scala">
 (foo: Rule1[String])      ~> (println(_))             : Rule0
 					</code></pre>
-
 					<pre class="fragment"><code data-trim class="scala">
 (foo: Rule1[String])      ~> (() ⇒ 17)                : Rule2[String, Int]
 (foo: Rule1[String])      ~  push(17)                 : Rule2[String, Int]
 					</code></pre>
-
 					<pre class="fragment"><code data-trim class="scala">
 (foo: Rule1[String]) ~> (s ⇒ s.toInt :: 3.14 :: HNil) : Rule2[Int, Double]
 					</code></pre>
-
 					<pre class="fragment"><code data-trim class="scala">
 case class Person(name: String, age: Int)
 (foo: Rule2[String, Int]) ~> Person                   : Rule1[Person]
 					</code></pre>
                 </section>
-
                 <section>
                     <h3>reduction rules</h3>
-<pre><code data-trim class="scala">
+                    <pre><code data-trim class="scala">
 reduce "1+2+3+4+5" to (15:Int)
-</code></pre>
-
-<pre class="fragment"><code data-trim class="scala">
+                    </code></pre>
+                    <pre class="fragment"><code data-trim class="scala">
 (number: Rule1[Int]) ~ zeroOrMore("+" ~ number) : Rule2[Int, Seq[Int]]
-</code></pre>
-
-<pre class="fragment"><code data-trim class="scala">
+                    </code></pre>
+                    <pre class="fragment"><code data-trim class="scala">
 def reductor = "+" ~ number ~> 
                ((a:Int, b: Int) => a + b) : Rule[Int::HNil, Int::HNil]
 
 (number: Rule1[Int]) ~ zeroOrMore(reductor) : Rule1[Int]
-</code></pre>
-
+                    </code></pre>
                     <p class="fragment">parser makes progress leaving <em>value stack</em> unchanged</p>
-
                     <pre class="fragment"><code data-trim class="scala">
 capture(CharPredicate.Digit) ~ optional("h" ~> ((s: String) ⇒ s + "hex"))
                     </code></pre>
-
 					<pre class="fragment"><code data-trim class="scala">
 (factor: Rule1[Int]) ~ zeroOrMore("*" ~ factor ~> ((a: Int, b) ⇒ a * b))
 					</code></pre>
-
 					<pre class="fragment"><code data-trim class="scala">
 (factor: Rule1[Int]) ~ oneOrMore("*" ~ factor ~> ((a: Int, b) ⇒ a * b))
 					</code></pre>
                 </section>
-
                 <section>
                 	<h3>calculator</h3>
-
-<pre><code data-trim class="scala">
+                    <pre><code data-trim class="scala">
 > new Calculator("1+(2+4)*3").InputLine.run() 
 scala.util.Success(25)
-</code></pre>
+                    </code></pre>
+                    <pre class="fragment"><code data-trim class="scala">class Calculator(val input: ParserInput) extends Parser {</code></pre>
+                    <pre class="fragment"><code class="scala">  def Digits = rule { oneOrMore(CharPredicate.Digit) } // Rule1[Stirng]
 
-<pre class="fragment"><code data-trim class="scala">
-class Calculator(val input: ParserInput) extends Parser {
-</code></pre>
+  def Number = rule { capture(Digits) ~> (_.toInt) }   // Rule1[Int]</code></pre>
+                    <pre class="fragment"><code class="scala">  def Parens = rule { '(' ~ Expression ~ ')' }</code></pre>
+                    <pre class="fragment"><code class="scala">  def Factor = rule { Number | Parens }</code></pre>
+                    <pre class="fragment"><code class="scala">  def Term = rule { Factor ~ zeroOrMore('*' ~ Factor ~> ((_: Int) * _)
+                                      | '/' ~ Factor ~> ((_: Int) / _)) }</code></pre>
+                    <pre class="fragment"><code class="scala">  def Expression: Rule1[Int] = rule {
+      Term ~ zeroOrMore('+' ~ Term ~> ((_: Int) + _)
+                      | '-' ~ Term ~> ((_: Int) - _)) }</code></pre>
+                    <pre class="fragment"><code class="scala">  def InputLine = rule { Expression ~ EOI }
 
-<pre class="fragment"><code data-trim class="scala">
-def Digits = rule { oneOrMore(CharPredicate.Digit) } // Rule1[Stirng]
-
-def Number = rule { capture(Digits) ~> (_.toInt) }   // Rule1[Int]
-</code></pre>
-
-<pre class="fragment"><code data-trim class="scala">
-def Parens = rule { '(' ~ Expression ~ ')' }
-</code></pre>
-
-<pre class="fragment"><code data-trim class="scala">
-def Factor = rule { Number | Parens }
-</code></pre>
-
-<pre class="fragment"><code data-trim class="scala">
-def Term = rule { Factor ~ zeroOrMore('*' ~ Factor ~> ((_: Int) * _)
-                                    | '/' ~ Factor ~> ((_: Int) / _)) }
-</code></pre>
-
-<pre class="fragment"><code data-trim class="scala">
-def Expression: Rule1[Int] = rule { 
-  Term ~ zeroOrMore('+' ~ Term ~> ((_: Int) + _)
-                  | '-' ~ Term ~> ((_: Int) - _)) }
-</code></pre>
-
-<pre class="fragment"><code data-trim class="scala">
-  def InputLine = rule { Expression ~ EOI }
-}
-</code></pre>
+}</code></pre>
                 </section>
-
                 <section>
                 	<h2>under the hood</h2>
                 </section>
-
 				<section>
 					<h3>rule macro</h3>
 					<pre><code data-trim class="scala">
 case class Rule(matched: Boolean)
-</code></pre>
-
-<pre class="fragment"><code data-trim class="scala">
+                    </code></pre>
+                    <pre class="fragment"><code data-trim class="scala">
 abstract class Parser {
   def rule(r: Rule): Rule = macro ParserMacros.ruleImpl
 
@@ -581,9 +509,8 @@ abstract class Parser {
   def __nextChar(): Char = // ...
   def __cursor: Int = // ...
 }
-</code></pre>
-
-<pre class="fragment"><code data-trim class="scala">
+                    </code></pre>
+                    <pre class="fragment"><code data-trim class="scala">
 object ParserMacros {	
   def ruleImpl(ctx: ParserContext)(r: ctx.Expr[Rule]): ctx.Expr[Rule] = {
     // ...
@@ -591,55 +518,47 @@ object ParserMacros {
 } 
   					</code></pre>
   				</section>
-
   				<section>
   					<h3>two step render()</h3>
-<pre><code data-trim class="scala">
+                    <pre><code data-trim class="scala">
 def ruleImpl(ctx: ParserContext)(r: ctx.Expr[Rule]): ctx.Expr[Rule] = 
   reify {
     OpTree(r.tree).render().splice
   }
-    </code></pre>
-
+                    </code></pre>
   					<ol>
   						<li>input: Scala compiler AST</li>
   						<li>IR:  parboiled2 OpTree</li>
   						<li>output: effective Scala code AST</li>
   					</ol>
   				</section>
-
   				<section>
   					<h3>quasiquotes match</h3>
-
   					<pre><code data-trim class="scala">
 def r = rule { "a" }
 def r = rule { str("a") }
 def r = rule { CurrentParser.this.str("a") }
   					</code></pre>
-
   					<pre class="fragment"><code data-trim class="scala">
 r.tree = Apply(Select(This(TypeName("CurrentParser")), TermName("str")),
                List(Literal(Constant("a"))))
   					</code></pre>
-
   					<pre class="fragment"><code data-trim class="scala">
 r.tree match {
   case Apply(Select(_, TermName("str")), List(Literal(Constant(s)))) ⇒
     StringMatch(s) // s is "a"
 }
   					</code></pre>
-
   					<pre class="fragment"><code data-trim class="scala">
 r.tree match {
   case q"$a.this.str($s)" ⇒ StringMatch(s) // a is CurrentParser
                                            // s is "a"
 }
-  					</code></pre>
+l3  					</code></pre>
   				</section>
-
   				<section>
   					<h3>OpTree</h3>
-<pre><code data-trim class="scala">
+                    <pre><code data-trim class="scala">
 object OpTree {
   def apply(tree: Tree): OpTree =
     r.tree match {
@@ -649,19 +568,18 @@ object OpTree {
       case q"$lhs.~($rhs)"    ⇒ Sequence(OpTree(lhs), OpTree(rhs))
     }
 }
-</code></pre>
-
-<pre class="fragment"><code data-trim class="scala">
+                    </code></pre>
+                    <pre class="fragment"><code data-trim class="scala">
 abstract class OpTree {
   def render(): Expr[Rule]
 }
+
 case class StringMatch(strTree: Tree)         extends OpTree
 case class CharMatch(charTree: Tree)          extends OpTree
 case class FirstOf(lhs: OpTree, rhs: OpTree)  extends OpTree
 case class Sequence(lhs: OpTree, rhs: OpTree) extends OpTree
-</code></pre>
+                    </code></pre>
   				</section>
-
 				<section>
 					<h3>CharMatch</h3>
 					<pre><code data-trim class="scala">
@@ -674,10 +592,8 @@ case class CharMatch(charTree: Tree) extends OpTree {
 }
 					</code></pre>
 				</section>
-
 				<section>
 					<h3>StringMatch: naive</h3>
-
 					<pre><code data-trim class="scala">
 case class StringMatch(strTree: Tree) extends OpTree {
   def render(): Expr[Rule] = c.Expr[Rule](q''
@@ -689,10 +605,8 @@ case class StringMatch(strTree: Tree) extends OpTree {
 '')
 					</code></pre>
 				</section>
-
 				<section>
-					<h3>StringMatch: effective</h2>
-
+					<h3>StringMatch: effective</h3>
 					<pre><code data-trim class="scala">
 case class StringMatch(strTree: Tree) extends OpTree {
   def render(): Expr[Rule] = c.Expr[Rule](q''
@@ -707,7 +621,6 @@ case class StringMatch(strTree: Tree) extends OpTree {
 '')
 					</code></pre>
 				</section>
-
 				<section>
 					<h3>FirstOf: a | b</h3>
 					<pre><code data-trim class="scala">
@@ -727,7 +640,6 @@ case class FirstOf(lhs: OpTree, rhs: OpTree) extends OpTree {
 }
 					</code></pre>
 				</section>
-
 				<section>
 					<h3>Sequence: a ~ b</h3>
 					<pre><code data-trim class="scala">
@@ -741,7 +653,6 @@ case class Sequence(lhs: OpTree, rhs: OpTree) extends OpTree {
 }
 					</code></pre>
 				</section>
-
                 <section>
                 	<h3>benchmark</h3>
                 	<pre><code data-trim class="scala">
@@ -755,7 +666,6 @@ case class Sequence(lhs: OpTree, rhs: OpTree) extends OpTree {
  Parboiled2JsonParser 13.17 ====
                 	</code></pre>
                 </section>
-
                 <section>
                     <h3>Thanks</h3>
                     <ul>
@@ -764,50 +674,45 @@ case class Sequence(lhs: OpTree, rhs: OpTree) extends OpTree {
                         <li>Scala community</li>
                     </ul>
 				</section>
-
                 <section>
                     <h2>Q &amp; A</h2>
                     <h4>@Alex_Myltsev</h4>
                     <h3><a href="http://parboiled2.org">parboiled2.org</a></h3>
                 </section>
-		</div>
+		    </div>
 
-		<script src="lib/js/head.min.js"></script>
-		<script src="js/reveal.min.js"></script>
+		    <script type="text/javascript" src="lib/js/head.min.js"></script>
+		    <script type="text/javascript" src="js/reveal.min.js"></script>
 
-		<script>
+		    <script type="text/javascript">
+                Reveal.initialize({
+                    controls: true,
+                    slideNumber: true,
+                    progress: true,
+                    history: true,
+                    center: true,
+                    mouseWheel: true,
+                    touch: true,
+                    theme: Reveal.getQueryHash().theme,
+                    transition: Reveal.getQueryHash().transition || 'default',
+                    dependencies: [
+                        { src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+                        { src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+                        { src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+                        { src: 'plugin/highlight/highlight.js', async: false, callback: function() { hljs.initHighlightingOnLoad(); } },
+                        { src: 'plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+                        { src: 'plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }
+                    ],
+                    transitionSpeed: 'fast',
+                    backgroundTransition: 'slide'
+                });
 
-			// Full list of configuration options available here:
-			// https://github.com/hakimel/reveal.js#configuration
-			Reveal.initialize({
-				controls: true,
-				progress: true,
-				history: true,
-				center: true,
-
-				theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
-				transition: Reveal.getQueryHash().transition || 'default', // default/cube/page/concave/zoom/linear/fade/none
-
-				// Parallax scrolling
-				// parallaxBackgroundImage: 'https://s3.amazonaws.com/hakim-static/reveal-js/reveal-parallax-1.jpg',
-				// parallaxBackgroundSize: '2100px 900px',
-
-				// Optional libraries used to extend on reveal.js
-				dependencies: [
-					{ src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
-					{ src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
-					{ src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
-					{ src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
-					{ src: 'plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
-					{ src: 'plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }
-				],
-
-                transition: 'none',
-                transitionSpeed: 'fast',
-                backgroundTransition: 'slide'
-			});
-
-		</script>
-
+                Reveal.addEventListener('ready', function () {
+                    setTimeout(function () {
+                        document.querySelector('body').className += ' loaded';
+                    }, 0);
+                });
+    		</script>
+        </div>
 	</body>
 </html>
